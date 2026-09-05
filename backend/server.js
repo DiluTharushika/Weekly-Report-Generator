@@ -17,7 +17,7 @@ app.get("/", (req, res) => {
 app.use("/api/auth", require("./routes/authRoutes"));
 app.use("/api/projects", require("./routes/projectRoutes"));// Routes will be added in next part
 app.use("/api/reports", require("./routes/reportRoutes"));
-// app.use("/api/auth", require("./routes/authRoutes"));
+app.use("/api/users", require("./routes/userRoutes"));// app.use("/api/auth", require("./routes/authRoutes"));
 
 app.use(notFound);
 app.use(errorHandler);
