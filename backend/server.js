@@ -14,7 +14,7 @@ app.use(express.json());
 app.get("/", (req, res) => {
   res.json({ message: "Weekly Report API is running" });
 });
-
+app.use("/api/auth", require("./routes/authRoutes"));
 // Routes will be added in next part
 // app.use("/api/auth", require("./routes/authRoutes"));
 

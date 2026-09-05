@@ -1,0 +1,39 @@
+const express = require("express");
+const { body } = require("express-validator");
+const { register, login, me } = require("../controllers/authController");
+const { protect } = require("../middleware/authMiddleware");
+const { ROLES } = require("../utils/constants");
+
+const router = express.Router();
+
+// Register validations
+router.post(
+  "/register",
+  [
+    body("name").trim().notEmpty().withMessage("Name is required"),
+    body("email").trim().isEmail().withMessage("Valid email is required"),
+    body("password")
+      .isLength({ min: 6 })
+      .withMessage("Password must be at least 6 characters"),
+    body("role")
+      .optional()
+      .isIn([ROLES.MEMBER, ROLES.MANAGER])
+      .withMessage("Role must be member or manager"),
+  ],
+  register
+);
+
+// Login validations
+router.post(
+  "/login",
+  [
+    body("email").trim().isEmail().withMessage("Valid email is required"),
+    body("password").notEmpty().withMessage("Password is required"),
+  ],
+  login
+);
+
+// current logged-in user
+router.get("/me", protect, me);
+
+module.exports = router;
