@@ -3,9 +3,10 @@ const notFound = (req, res, next) => {
   next(new Error(`Not Found - ${req.originalUrl}`));
 };
 
-// eslint-disable-next-line no-unused-vars
+// IMPORTANT: must have 4 params (err, req, res, next)
 const errorHandler = (err, req, res, next) => {
-  const statusCode = res.statusCode && res.statusCode !== 200 ? res.statusCode : 500;
+  const statusCode =
+    res.statusCode && res.statusCode !== 200 ? res.statusCode : 500;
 
   res.status(statusCode).json({
     message: err.message || "Server error",

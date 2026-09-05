@@ -8,17 +8,22 @@ dotenv.config();
 connectDB();
 
 const app = express();
+
 app.use(cors());
 app.use(express.json());
 
 app.get("/", (req, res) => {
   res.json({ message: "Weekly Report API is running" });
 });
+
+// Routes
 app.use("/api/auth", require("./routes/authRoutes"));
-app.use("/api/projects", require("./routes/projectRoutes"));// Routes will be added in next part
+app.use("/api/projects", require("./routes/projectRoutes"));
 app.use("/api/reports", require("./routes/reportRoutes"));
-app.use("/api/users", require("./routes/userRoutes"));// app.use("/api/auth", require("./routes/authRoutes"));
+app.use("/api/users", require("./routes/userRoutes"));
 app.use("/api/dashboard", require("./routes/dashboardRoutes"));
+
+// Error middleware (must be last)
 app.use(notFound);
 app.use(errorHandler);
 

@@ -3,22 +3,22 @@ const User = require("../models/User");
 const generateToken = require("../utils/generateToken");
 const { ROLES } = require("../utils/constants");
 
-// helper to send validation errors
 const handleValidation = (req, res) => {
   const errors = validationResult(req);
   if (!errors.isEmpty()) {
-    res.status(400);
-    return res.json({ message: "Validation failed", errors: errors.array() });
+    res.status(400).json({
+      message: "Validation failed",
+      errors: errors.array(),
+    });
+    return true; // stop
   }
-  return null;
+  return false;
 };
 
 // POST /api/auth/register
-// body: { name, email, password, role? }
 const register = async (req, res, next) => {
   try {
-    const bad = handleValidation(req, res);
-    if (bad) return;
+    if (handleValidation(req, res)) return;
 
     const { name, email, password, role } = req.body;
 
@@ -28,9 +28,7 @@ const register = async (req, res, next) => {
       return res.json({ message: "Email already registered" });
     }
 
-    // SECURITY NOTE:
-    // In real apps, do NOT allow anyone to register as admin/manager.
-    // For assignment/demo, we allow only member/manager; admin should be seeded.
+    // Allow only member/manager on signup (admin should be seeded)
     let safeRole = ROLES.MEMBER;
     if (role === ROLES.MANAGER) safeRole = ROLES.MANAGER;
 
@@ -59,15 +57,12 @@ const register = async (req, res, next) => {
 };
 
 // POST /api/auth/login
-// body: { email, password }
 const login = async (req, res, next) => {
   try {
-    const bad = handleValidation(req, res);
-    if (bad) return;
+    if (handleValidation(req, res)) return;
 
     const { email, password } = req.body;
 
-    // password is select:false, so we must explicitly select it
     const user = await User.findOne({ email: email.toLowerCase() }).select(
       "+password"
     );
@@ -100,10 +95,9 @@ const login = async (req, res, next) => {
   }
 };
 
-// GET /api/auth/me (protected)
+// GET /api/auth/me
 const me = async (req, res, next) => {
   try {
-    // req.user comes from protect middleware
     const user = await User.findById(req.user.id);
     if (!user || !user.isActive) {
       res.status(401);

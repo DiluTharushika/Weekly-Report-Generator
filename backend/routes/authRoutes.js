@@ -1,12 +1,12 @@
 const express = require("express");
 const { body } = require("express-validator");
+
 const { register, login, me } = require("../controllers/authController");
 const { protect } = require("../middleware/authMiddleware");
 const { ROLES } = require("../utils/constants");
 
 const router = express.Router();
 
-// Register validations
 router.post(
   "/register",
   [
@@ -23,7 +23,6 @@ router.post(
   register
 );
 
-// Login validations
 router.post(
   "/login",
   [
@@ -33,7 +32,6 @@ router.post(
   login
 );
 
-// current logged-in user
 router.get("/me", protect, me);
 
 module.exports = router;
