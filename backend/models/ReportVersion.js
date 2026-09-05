@@ -13,3 +13,5 @@ const reportVersionSchema = new mongoose.Schema(
 reportVersionSchema.index({ report: 1, versionNumber: 1 }, { unique: true });
 
 module.exports = mongoose.model("ReportVersion", reportVersionSchema);
+module.exports =
+  mongoose.models.ReportVersion || mongoose.model("ReportVersion", reportVersionSchema);
