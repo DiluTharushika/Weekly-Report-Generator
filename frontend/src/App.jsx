@@ -9,10 +9,12 @@ import NotFound from "./pages/common/NotFound.jsx";
 import Unauthorized from "./pages/common/Unauthorized.jsx";
 
 import ProtectedRoute from "./components/common/ProtectedRoute.jsx";
+import DashboardLayout from "./layouts/DashboardLayout.jsx";
 
 import MemberDashboard from "./pages/member/MemberDashboard.jsx";
 import ReportHistoryPage from "./pages/member/ReportHistoryPage.jsx";
 import CreateReportPage from "./pages/member/CreateReportPage.jsx";
+import EditReportPage from "./pages/member/EditReportPage.jsx";
 
 import ManagerDashboard from "./pages/manager/ManagerDashboard.jsx";
 
@@ -49,20 +51,28 @@ export default function App() {
         <Route path="/register" element={<RegisterPage />} />
         <Route path="/unauthorized" element={<Unauthorized />} />
 
-        {/* MEMBER routes */}
+        {/* MEMBER area (Protected + Layout) */}
         <Route element={<ProtectedRoute allowedRoles={[ROLES.MEMBER]} />}>
-          <Route path="/member" element={<MemberDashboard />} />
-          <Route path="/member/history" element={<ReportHistoryPage />} />
-          <Route path="/member/reports/new" element={<CreateReportPage />} />
-
-          {/* placeholder until we build Edit page */}
           <Route
-            path="/member/reports/:id/edit"
-            element={<div className="p-6">Edit Report (TODO)</div>}
-          />
+            element={
+              <DashboardLayout
+                title="Member Area"
+                links={[
+                  { to: "/member", label: "Dashboard" },
+                  { to: "/member/history", label: "My Report History" },
+                  { to: "/member/reports/new", label: "New Report" },
+                ]}
+              />
+            }
+          >
+            <Route path="/member" element={<MemberDashboard />} />
+            <Route path="/member/history" element={<ReportHistoryPage />} />
+            <Route path="/member/reports/new" element={<CreateReportPage />} />
+            <Route path="/member/reports/:id/edit" element={<EditReportPage />} />
+          </Route>
         </Route>
 
-        {/* MANAGER/ADMIN routes */}
+        {/* MANAGER/ADMIN area (for now only manager dashboard, no layout yet) */}
         <Route element={<ProtectedRoute allowedRoles={[ROLES.MANAGER, ROLES.ADMIN]} />}>
           <Route path="/manager" element={<ManagerDashboard />} />
         </Route>
