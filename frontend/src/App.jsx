@@ -9,14 +9,18 @@ import NotFound from "./pages/common/NotFound.jsx";
 import Unauthorized from "./pages/common/Unauthorized.jsx";
 
 import ProtectedRoute from "./components/common/ProtectedRoute.jsx";
+
 import MemberDashboard from "./pages/member/MemberDashboard.jsx";
-import ManagerDashboard from "./pages/manager/ManagerDashboard.jsx";
 import ReportHistoryPage from "./pages/member/ReportHistoryPage.jsx";
+import CreateReportPage from "./pages/member/CreateReportPage.jsx";
+
+import ManagerDashboard from "./pages/manager/ManagerDashboard.jsx";
 
 import { ROLES } from "./utils/constants.js";
 
 function HomeRedirect() {
   const { user } = useSelector((s) => s.auth);
+
   if (!user) return <div className="p-6">Loading...</div>;
 
   if (user.role === ROLES.MEMBER) return <Navigate to="/member" replace />;
@@ -34,11 +38,13 @@ export default function App() {
   return (
     <BrowserRouter>
       <Routes>
+        {/* Home */}
         <Route
           path="/"
           element={token ? <HomeRedirect /> : <Navigate to="/login" replace />}
         />
 
+        {/* Public */}
         <Route path="/login" element={<LoginPage />} />
         <Route path="/register" element={<RegisterPage />} />
         <Route path="/unauthorized" element={<Unauthorized />} />
@@ -47,10 +53,13 @@ export default function App() {
         <Route element={<ProtectedRoute allowedRoles={[ROLES.MEMBER]} />}>
           <Route path="/member" element={<MemberDashboard />} />
           <Route path="/member/history" element={<ReportHistoryPage />} />
+          <Route path="/member/reports/new" element={<CreateReportPage />} />
 
-          {/* temporary placeholders so links won't break */}
-          <Route path="/member/reports/new" element={<div className="p-6">Create Report (TODO)</div>} />
-          <Route path="/member/reports/:id/edit" element={<div className="p-6">Edit Report (TODO)</div>} />
+          {/* placeholder until we build Edit page */}
+          <Route
+            path="/member/reports/:id/edit"
+            element={<div className="p-6">Edit Report (TODO)</div>}
+          />
         </Route>
 
         {/* MANAGER/ADMIN routes */}
@@ -58,11 +67,15 @@ export default function App() {
           <Route path="/manager" element={<ManagerDashboard />} />
         </Route>
 
-        {/* Report detail route (used by View link) */}
+        {/* Report detail route (placeholder for now) */}
         <Route element={<ProtectedRoute />}>
-          <Route path="/reports/:id" element={<div className="p-6">Report Detail (TODO)</div>} />
+          <Route
+            path="/reports/:id"
+            element={<div className="p-6">Report Detail (TODO)</div>}
+          />
         </Route>
 
+        {/* 404 */}
         <Route path="*" element={<NotFound />} />
       </Routes>
     </BrowserRouter>
