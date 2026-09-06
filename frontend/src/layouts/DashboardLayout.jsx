@@ -8,7 +8,9 @@ import {
   FiLogOut, 
   FiCheckSquare,
   FiUserCheck,
-  FiTrendingUp
+  FiTrendingUp,
+  FiUsers,
+  FiFolder
 } from "react-icons/fi";
 
 const NavItem = ({ to, label, icon: Icon }) => (
@@ -35,6 +37,8 @@ export default function DashboardLayout({ links, title = "Dashboard" }) {
   const getIconForLink = (to) => {
     if (to.endsWith("/history")) return FiClock;
     if (to.endsWith("/new")) return FiPlusCircle;
+    if (to.endsWith("/users")) return FiUsers;
+    if (to.endsWith("/projects")) return FiFolder;
     if (to === "/manager") return FiTrendingUp;
     return FiGrid;
   };

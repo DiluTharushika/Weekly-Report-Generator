@@ -4,6 +4,7 @@ const { body } = require("express-validator");
 const {
   createReport,
   getMyReports,
+  getAllReports,
   getReportById,
   updateReport,
   submitReport,
@@ -31,6 +32,9 @@ router.post("/", protect, reportBaseValidation, createReport);
 
 // Member list own reports
 router.get("/my", protect, getMyReports);
+
+// Manager / Admin list ALL team reports (must come BEFORE "/:id" below)
+router.get("/", protect, allowRoles(ROLES.MANAGER, ROLES.ADMIN), getAllReports);
 
 // View report detail (member own, manager any) - RBAC inside controller
 router.get("/:id", protect, getReportById);

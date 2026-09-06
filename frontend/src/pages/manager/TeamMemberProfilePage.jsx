@@ -15,15 +15,14 @@ import MemberDashboard from "./pages/member/MemberDashboard.jsx";
 import ReportHistoryPage from "./pages/member/ReportHistoryPage.jsx";
 import CreateReportPage from "./pages/member/CreateReportPage.jsx";
 import EditReportPage from "./pages/member/EditReportPage.jsx";
+import UsersPage from "./pages/manager/UsersPage.jsx";
+import ReportDetailPage from "./pages/common/ReportDetailPage.jsx";
 
 import ManagerDashboard from "./pages/manager/ManagerDashboard.jsx";
 import TeamReportsPage from "./pages/manager/TeamReportsPage.jsx";
 import ReviewReportPage from "./pages/manager/ReviewReportPage.jsx";
 import ProjectsPage from "./pages/manager/ProjectsPage.jsx";
-import UsersPage from "./pages/manager/UsersPage.jsx";
-import MemberProfilePage from "./pages/manager/MemberProfilePage.jsx";
-
-import ReportDetailPage from "./pages/common/ReportDetailPage.jsx";
+import TeamMemberProfilePage from "./pages/manager/TeamMemberProfilePage.jsx";
 
 import { ROLES } from "./utils/constants.js";
 
@@ -71,7 +70,7 @@ export default function App() {
           </Route>
         </Route>
 
-        {/* Manager / Admin */}
+        {/* Manager */}
         <Route element={<ProtectedRoute allowedRoles={[ROLES.MANAGER, ROLES.ADMIN]} />}>
           <Route
             element={
@@ -89,9 +88,9 @@ export default function App() {
             <Route path="/manager" element={<ManagerDashboard />} />
             <Route path="/manager/reports" element={<TeamReportsPage />} />
             <Route path="/manager/reports/:id/review" element={<ReviewReportPage />} />
-            <Route path="/manager/projects" element={<ProjectsPage />} />
             <Route path="/manager/users" element={<UsersPage />} />
-            <Route path="/manager/users/:id" element={<MemberProfilePage />} />
+            <Route path="/manager/users/:id" element={<TeamMemberProfilePage />} />
+            <Route path="/manager/projects" element={<ProjectsPage />} />
           </Route>
         </Route>
 

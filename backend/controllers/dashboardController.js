@@ -1,99 +1,96 @@
 const Report = require("../models/Report");
-const { REPORT_STATUS } = require("../utils/constants");
+const User = require("../models/User");
+const { REPORT_STATUS, ROLES } = require("../utils/constants");
 
-const getWeekRange = (weekStartStr) => {
-  const start = new Date(weekStartStr);
-  const end = new Date(start);
-  end.setDate(end.getDate() + 6);
-  end.setHours(23, 59, 59, 999);
-  return { start, end };
-};
-
-// GET /api/dashboard/summary?weekStart=YYYY-MM-DD
-const getSummary = async (req, res, next) => {
+/**
+ * GET /api/dashboard/summary
+ * Optional query: weekStart=YYYY-MM-DD
+ *   - If provided: stats scoped to that single week (legacy behavior)
+ *   - If omitted: stats across ALL reports, all time (default now)
+ *
+ * Manager/Admin: aggregated counts + recent reports
+ */
+const getDashboardSummary = async (req, res, next) => {
   try {
     const { weekStart } = req.query;
-    if (!weekStart) {
-      res.status(400);
-      return res.json({ message: "weekStart query param is required (YYYY-MM-DD)" });
+
+    let filter = {};
+
+    if (weekStart) {
+      const start = new Date(weekStart);
+      start.setHours(0, 0, 0, 0);
+      const end = new Date(start);
+      end.setDate(end.getDate() + 1);
+      filter = { weekStart: { $gte: start, $lt: end } };
     }
 
-    const { start, end } = getWeekRange(weekStart);
+    const [
+      totalReports,
+      submittedCount,
+      needsCorrectionCount,
+      approvedCount,
+      draftCount,
+      totalMembers,
+      statusByMemberRaw,
+      recentReportsRaw,
+    ] = await Promise.all([
+      Report.countDocuments(filter),
+      Report.countDocuments({ ...filter, status: REPORT_STATUS.SUBMITTED }),
+      Report.countDocuments({ ...filter, status: REPORT_STATUS.NEEDS_CORRECTION }),
+      Report.countDocuments({ ...filter, status: REPORT_STATUS.APPROVED }),
+      Report.countDocuments({ ...filter, status: REPORT_STATUS.DRAFT }),
+      User.countDocuments({ role: ROLES.MEMBER }),
+      Report.find(filter).populate("user", "name").lean(),
+      Report.find(filter)
+        .sort({ updatedAt: -1 })
+        .limit(10)
+        .populate("user", "name")
+        .populate("project", "name")
+        .lean(),
+    ]);
 
-    // Get all reports for that week
-    const reports = await Report.find({
-      weekStart: { $gte: start, $lte: end },
-    })
-      .populate("user", "name email role")
-      .populate("project", "name color")
-      .lean();
+    const compliedCount = submittedCount + needsCorrectionCount + approvedCount;
+    const complianceRate =
+      totalMembers > 0 ? Math.round((compliedCount / totalMembers) * 100) : 0;
 
-    const total = reports.length;
-
-    const statusCounts = reports.reduce(
-      (acc, r) => {
-        acc[r.status] = (acc[r.status] || 0) + 1;
-        return acc;
-      },
-      {}
-    );
-
-    const submittedCount = statusCounts[REPORT_STATUS.SUBMITTED] || 0;
-    const approvedCount = statusCounts[REPORT_STATUS.APPROVED] || 0;
-    const needsCorrectionCount = statusCounts[REPORT_STATUS.NEEDS_CORRECTION] || 0;
-    const draftCount = statusCounts[REPORT_STATUS.DRAFT] || 0;
-
-    // Compliance rate (simple): submitted+approved+needsCorrection vs all reports (for that week)
-    const doneOrInReview = submittedCount + approvedCount + needsCorrectionCount;
-    const complianceRate = total === 0 ? 0 : Math.round((doneOrInReview / total) * 100);
-
-    // Open blockers count (all blockers entries across team)
-    const openBlockersCount = reports.reduce((acc, r) => {
-      const blockers = Array.isArray(r.blockers) ? r.blockers : [];
-      return acc + blockers.length;
-    }, 0);
-
-    // Status by member (for bar chart)
-    const statusByMember = {};
-    for (const r of reports) {
+    const statusByMemberMap = {};
+    statusByMemberRaw.forEach((r) => {
       const name = r.user?.name || "Unknown";
-      if (!statusByMember[name]) {
-        statusByMember[name] = {
+      if (!statusByMemberMap[name]) {
+        statusByMemberMap[name] = {
+          name,
           Draft: 0,
           Submitted: 0,
           "Needs Correction": 0,
           Approved: 0,
         };
       }
-      statusByMember[name][r.status] = (statusByMember[name][r.status] || 0) + 1;
-    }
+      statusByMemberMap[name][r.status] =
+        (statusByMemberMap[name][r.status] || 0) + 1;
+    });
+    const statusByMember = Object.values(statusByMemberMap);
+
+    const recentReports = recentReportsRaw.map((r) => ({
+      id: r._id,
+      memberName: r.user?.name || "Unknown",
+      projectName: r.project?.name || "-",
+      status: r.status,
+      updatedAt: r.updatedAt,
+    }));
 
     res.json({
-      weekStart: start,
-      weekEnd: end,
-      totalReports: total,
+      totalReports,
       submittedCount,
-      approvedCount,
       needsCorrectionCount,
+      approvedCount,
       draftCount,
       complianceRate,
-      openBlockersCount,
       statusByMember,
-      // for recent activity feed in UI
-      recentReports: reports
-        .sort((a, b) => new Date(b.updatedAt) - new Date(a.updatedAt))
-        .slice(0, 10)
-        .map((r) => ({
-          id: r._id,
-          memberName: r.user?.name,
-          projectName: r.project?.name,
-          status: r.status,
-          updatedAt: r.updatedAt,
-        })),
+      recentReports,
     });
   } catch (err) {
     next(err);
   }
 };
 
-module.exports = { getSummary };
+module.exports = { getDashboardSummary };

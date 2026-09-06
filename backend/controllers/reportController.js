@@ -152,6 +152,61 @@ const getMyReports = async (req, res, next) => {
 };
 
 /**
+ * GET /api/reports
+ * Manager/Admin: list ALL team reports with filters + pagination
+ * Query: page, limit, status, project, user, from, to
+ */
+const getAllReports = async (req, res, next) => {
+  try {
+    const {
+      page = 1,
+      limit = 10,
+      status,
+      project,
+      user,
+      from,
+      to,
+    } = req.query;
+
+    const filter = {};
+
+    if (status) filter.status = status;
+    if (project) filter.project = project;
+    if (user) filter.user = user;
+
+    if (from || to) {
+      filter.weekStart = {};
+      if (from) filter.weekStart.$gte = new Date(from);
+      if (to) filter.weekStart.$lte = new Date(to);
+    }
+
+    const pageNum = Number(page);
+    const limitNum = Number(limit);
+    const skip = (pageNum - 1) * limitNum;
+
+    const [items, total] = await Promise.all([
+      Report.find(filter)
+        .sort({ weekStart: -1, updatedAt: -1 })
+        .skip(skip)
+        .limit(limitNum)
+        .populate("user", "name email")
+        .populate("project", "name color")
+        .lean(),
+      Report.countDocuments(filter),
+    ]);
+
+    res.json({
+      page: pageNum,
+      limit: limitNum,
+      total,
+      items,
+    });
+  } catch (err) {
+    next(err);
+  }
+};
+
+/**
  * GET /api/reports/:id
  * Member: can view only own report
  * Manager/Admin: can view any report (we will also use this endpoint for them)
@@ -365,6 +420,7 @@ const reviewReport = async (req, res, next) => {
 module.exports = {
   createReport,
   getMyReports,
+  getAllReports,
   getReportById,
   updateReport,
   submitReport,

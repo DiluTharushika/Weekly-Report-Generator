@@ -5,6 +5,7 @@ import {
   updateProjectApi,
   deleteProjectApi,
 } from "../../api/projectApi.js";
+import { FiPlus, FiEdit3, FiTrash2, FiFolder, FiCheck, FiX } from "react-icons/fi";
 
 export default function ProjectsPage() {
   const [loading, setLoading] = useState(true);
@@ -82,7 +83,7 @@ export default function ProjectsPage() {
   };
 
   const remove = async (id) => {
-    const ok = window.confirm("Delete this project?");
+    const ok = window.confirm("Are you sure you want to delete this project category?");
     if (!ok) return;
 
     setSaving(true);
@@ -98,142 +99,170 @@ export default function ProjectsPage() {
   };
 
   return (
-    <div className="space-y-4">
-      <div>
-        <h2 className="text-lg font-semibold text-slate-900">Projects</h2>
-        <p className="text-sm text-slate-500 mt-1">
-          Manage projects/categories used in weekly reports.
+    <div className="space-y-6">
+      {/* Header section */}
+      <div className="pb-4 border-b border-slate-100">
+        <h1 className="text-xl font-bold text-slate-900 tracking-tight">Project Category Management</h1>
+        <p className="text-xs text-slate-500 mt-0.5">
+          Configure project taxonomies and tags used for weekly status tagging
         </p>
       </div>
 
       {error && (
-        <div className="rounded-xl border border-red-200 bg-red-50 px-4 py-3 text-sm text-red-700">
+        <div className="rounded-2xl border border-red-200 bg-red-50 p-4 text-xs text-red-700 font-medium">
           {error}
         </div>
       )}
 
-      {/* Create / Edit form */}
-      <div className="rounded-2xl border border-slate-200 bg-white p-5 shadow-sm">
-        <h3 className="text-base font-semibold text-slate-900">
-          {editingId ? "Edit Project" : "Add New Project"}
-        </h3>
+      {/* Form Card */}
+      <div className="rounded-2xl border border-slate-200/80 bg-white p-6 shadow-xs">
+        <div className="flex items-center gap-2 pb-3 border-b border-slate-100 mb-4">
+          <FiFolder className="text-indigo-600 text-lg" />
+          <h2 className="text-sm font-bold text-slate-900 tracking-tight">
+            {editingId ? "Edit Project Category" : "Add New Project Category"}
+          </h2>
+        </div>
 
-        <form onSubmit={submit} className="mt-4 grid grid-cols-1 md:grid-cols-4 gap-3">
-          <div className="md:col-span-1">
-            <label className="block text-xs text-slate-600 mb-1">Name</label>
-            <input
-              className="w-full rounded-xl border border-slate-300 px-3 py-2 text-sm"
-              value={name}
-              onChange={(e) => setName(e.target.value)}
-              placeholder="Client A"
-            />
-          </div>
-
-          <div className="md:col-span-2">
-            <label className="block text-xs text-slate-600 mb-1">Description</label>
-            <input
-              className="w-full rounded-xl border border-slate-300 px-3 py-2 text-sm"
-              value={description}
-              onChange={(e) => setDescription(e.target.value)}
-              placeholder="Short description"
-            />
-          </div>
-
-          <div className="md:col-span-1">
-            <label className="block text-xs text-slate-600 mb-1">Color</label>
-            <div className="flex gap-2">
+        <form onSubmit={submit} className="space-y-4">
+          <div className="grid grid-cols-1 sm:grid-cols-12 gap-4">
+            <div className="sm:col-span-4">
+              <label className="block text-xs font-semibold text-slate-700 mb-1">
+                Project Name <span className="text-red-500">*</span>
+              </label>
               <input
-                type="color"
-                className="h-10 w-12 rounded-lg border border-slate-300"
-                value={color}
-                onChange={(e) => setColor(e.target.value)}
+                className="w-full rounded-xl border border-slate-200 bg-slate-50/50 px-3.5 py-2 text-xs text-slate-900 focus:bg-white focus:border-indigo-500 focus:ring-2 focus:ring-indigo-500/20 transition-all outline-none"
+                value={name}
+                onChange={(e) => setName(e.target.value)}
+                placeholder="e.g. Mobile App Redesign"
+                required
               />
+            </div>
+
+            <div className="sm:col-span-5">
+              <label className="block text-xs font-semibold text-slate-700 mb-1">
+                Description
+              </label>
               <input
-                className="flex-1 rounded-xl border border-slate-300 px-3 py-2 text-sm"
-                value={color}
-                onChange={(e) => setColor(e.target.value)}
+                className="w-full rounded-xl border border-slate-200 bg-slate-50/50 px-3.5 py-2 text-xs text-slate-900 focus:bg-white focus:border-indigo-500 focus:ring-2 focus:ring-indigo-500/20 transition-all outline-none"
+                value={description}
+                onChange={(e) => setDescription(e.target.value)}
+                placeholder="Key objectives & deliverables"
               />
+            </div>
+
+            <div className="sm:col-span-3">
+              <label className="block text-xs font-semibold text-slate-700 mb-1">
+                Badge Color
+              </label>
+              <div className="flex items-center gap-2">
+                <input
+                  type="color"
+                  className="h-8 w-10 rounded-lg border border-slate-200 cursor-pointer p-0.5"
+                  value={color}
+                  onChange={(e) => setColor(e.target.value)}
+                />
+                <input
+                  className="flex-1 rounded-xl border border-slate-200 bg-slate-50/50 px-3 py-2 text-xs text-slate-900 focus:bg-white focus:border-indigo-500 transition-all outline-none"
+                  value={color}
+                  onChange={(e) => setColor(e.target.value)}
+                />
+              </div>
             </div>
           </div>
 
-          <div className="md:col-span-4 flex gap-2">
+          <div className="flex items-center gap-2 pt-2">
             <button
               disabled={saving}
-              className="rounded-xl bg-blue-600 px-4 py-2 text-sm font-medium text-white hover:bg-blue-700 disabled:opacity-50"
+              className="inline-flex items-center gap-1.5 rounded-xl bg-indigo-600 px-4 py-2 text-xs font-semibold text-white shadow-md shadow-indigo-600/20 hover:bg-indigo-700 disabled:opacity-50 transition-colors cursor-pointer"
               type="submit"
             >
-              {saving ? "Saving..." : editingId ? "Update" : "Create"}
+              <FiCheck /> {saving ? "Saving..." : editingId ? "Update Category" : "Create Category"}
             </button>
 
             {editingId && (
               <button
                 type="button"
                 onClick={resetForm}
-                className="rounded-xl border border-slate-300 bg-white px-4 py-2 text-sm font-medium text-slate-700 hover:bg-slate-50"
+                className="inline-flex items-center gap-1 rounded-xl border border-slate-200 bg-white px-4 py-2 text-xs font-semibold text-slate-700 hover:bg-slate-50 transition-colors cursor-pointer"
               >
-                Cancel
+                <FiX /> Cancel
               </button>
             )}
           </div>
         </form>
       </div>
 
-      {/* List */}
-      <div className="rounded-2xl border border-slate-200 bg-white shadow-sm overflow-hidden">
-        <div className="px-5 py-4 border-b border-slate-200 flex items-center justify-between">
-          <h3 className="text-base font-semibold text-slate-900">All Projects</h3>
-          <span className="text-xs text-slate-500">{projects.length} total</span>
+      {/* Projects Table */}
+      <div className="rounded-2xl border border-slate-200/80 bg-white shadow-xs overflow-hidden">
+        <div className="p-5 border-b border-slate-100 flex items-center justify-between">
+          <div>
+            <h2 className="text-base font-bold text-slate-900 tracking-tight">Active Categories</h2>
+            <p className="text-xs text-slate-500 mt-0.5">
+              Available categories for weekly report tagging
+            </p>
+          </div>
+          <span className="px-3 py-1 rounded-full bg-slate-100 text-slate-600 text-xs font-semibold">
+            {projects.length} Total
+          </span>
         </div>
 
         {loading ? (
-          <div className="p-5 text-sm text-slate-600">Loading...</div>
-        ) : projects.length === 0 ? (
-          <div className="p-5 text-sm text-slate-500">No projects.</div>
+          <div className="p-12 text-center text-xs text-slate-400">Loading project categories...</div>
         ) : (
           <div className="overflow-x-auto">
-            <table className="w-full text-sm">
-              <thead className="bg-slate-50 text-slate-600">
+            <table className="w-full text-xs">
+              <thead className="bg-slate-50/70 text-slate-500 border-b border-slate-100">
                 <tr>
-                  <th className="text-left font-medium px-4 py-3">Name</th>
-                  <th className="text-left font-medium px-4 py-3">Description</th>
-                  <th className="text-left font-medium px-4 py-3">Color</th>
-                  <th className="text-right font-medium px-4 py-3">Actions</th>
+                  <th className="text-left font-semibold px-5 py-3.5">Category Name</th>
+                  <th className="text-left font-semibold px-5 py-3.5">Description</th>
+                  <th className="text-left font-semibold px-5 py-3.5">Tag Badge</th>
+                  <th className="text-right font-semibold px-5 py-3.5">Actions</th>
                 </tr>
               </thead>
-              <tbody className="divide-y divide-slate-200">
+              <tbody className="divide-y divide-slate-100">
                 {projects.map((p) => (
-                  <tr key={p._id} className="hover:bg-slate-50">
-                    <td className="px-4 py-3 font-medium text-slate-900">{p.name}</td>
-                    <td className="px-4 py-3 text-slate-700">{p.description || "-"}</td>
-                    <td className="px-4 py-3">
-                      <div className="flex items-center gap-2">
+                  <tr key={p._id} className="hover:bg-slate-50/60 transition-colors">
+                    <td className="px-5 py-3.5 font-bold text-slate-900">{p.name}</td>
+                    <td className="px-5 py-3.5 text-slate-600 font-medium">{p.description || "-"}</td>
+                    <td className="px-5 py-3.5">
+                      <div className="inline-flex items-center gap-2 px-2.5 py-1 rounded-full border border-slate-200 bg-slate-50 text-slate-700 text-[11px] font-semibold">
                         <span
-                          className="inline-block h-4 w-4 rounded"
+                          className="h-2 w-2 rounded-full"
                           style={{ backgroundColor: p.color || "#3B82F6" }}
                         />
-                        <span className="text-xs text-slate-600">{p.color}</span>
+                        {p.color}
                       </div>
                     </td>
-                    <td className="px-4 py-3 text-right">
-                      <button
-                        className="text-slate-700 hover:underline"
-                        onClick={() => startEdit(p)}
-                        type="button"
-                      >
-                        Edit
-                      </button>
-                      <span className="mx-2 text-slate-300">|</span>
-                      <button
-                        className="text-red-600 hover:underline"
-                        onClick={() => remove(p._id)}
-                        type="button"
-                        disabled={saving}
-                      >
-                        Delete
-                      </button>
+                    <td className="px-5 py-3.5 text-right">
+                      <div className="flex items-center justify-end gap-2">
+                        <button
+                          className="inline-flex items-center gap-1 px-3 py-1.5 rounded-lg border border-slate-200 text-slate-700 hover:bg-slate-100 font-medium transition-colors cursor-pointer"
+                          onClick={() => startEdit(p)}
+                          type="button"
+                        >
+                          <FiEdit3 className="text-sm" /> Edit
+                        </button>
+
+                        <button
+                          className="inline-flex items-center gap-1 px-3 py-1.5 rounded-lg border border-red-200 bg-red-50/50 text-red-600 hover:bg-red-100 font-medium transition-colors cursor-pointer disabled:opacity-50"
+                          onClick={() => remove(p._id)}
+                          type="button"
+                          disabled={saving}
+                        >
+                          <FiTrash2 className="text-sm" /> Delete
+                        </button>
+                      </div>
                     </td>
                   </tr>
                 ))}
+
+                {projects.length === 0 && (
+                  <tr>
+                    <td className="px-5 py-12 text-center text-slate-400" colSpan={4}>
+                      No project categories defined yet. Use the form above to add your first category.
+                    </td>
+                  </tr>
+                )}
               </tbody>
             </table>
           </div>
