@@ -16,7 +16,10 @@ import ReportHistoryPage from "./pages/member/ReportHistoryPage.jsx";
 import CreateReportPage from "./pages/member/CreateReportPage.jsx";
 import EditReportPage from "./pages/member/EditReportPage.jsx";
 
+import ReportDetailPage from "./pages/common/ReportDetailPage.jsx";
+
 import ManagerDashboard from "./pages/manager/ManagerDashboard.jsx";
+import TeamReportsPage from "./pages/manager/TeamReportsPage.jsx";
 
 import { ROLES } from "./utils/constants.js";
 
@@ -72,17 +75,33 @@ export default function App() {
           </Route>
         </Route>
 
-        {/* MANAGER/ADMIN area (for now only manager dashboard, no layout yet) */}
+        {/* MANAGER/ADMIN area (Protected + Layout) */}
         <Route element={<ProtectedRoute allowedRoles={[ROLES.MANAGER, ROLES.ADMIN]} />}>
-          <Route path="/manager" element={<ManagerDashboard />} />
+          <Route
+            element={
+              <DashboardLayout
+                title="Manager Area"
+                links={[
+                  { to: "/manager", label: "Dashboard" },
+                  { to: "/manager/reports", label: "Team Reports" },
+                ]}
+              />
+            }
+          >
+            <Route path="/manager" element={<ManagerDashboard />} />
+            <Route path="/manager/reports" element={<TeamReportsPage />} />
+
+            {/* placeholder until we build review page */}
+            <Route
+              path="/manager/reports/:id/review"
+              element={<div className="p-6">Review Page (TODO)</div>}
+            />
+          </Route>
         </Route>
 
-        {/* Report detail route (placeholder for now) */}
+        {/* Report detail route (both member + manager can view) */}
         <Route element={<ProtectedRoute />}>
-          <Route
-            path="/reports/:id"
-            element={<div className="p-6">Report Detail (TODO)</div>}
-          />
+          <Route path="/reports/:id" element={<ReportDetailPage />} />
         </Route>
 
         {/* 404 */}

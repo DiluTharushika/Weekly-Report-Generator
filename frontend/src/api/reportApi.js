@@ -15,5 +15,14 @@ export const updateReportApi = (id, payload) =>
 export const submitReportApi = (id) =>
   axiosInstance.put(`/api/reports/${id}/submit`).then((res) => res.data);
 
+export const reviewReportApi = (id, payload) =>
+  axiosInstance.put(`/api/reports/${id}/review`, payload).then((res) => res.data);
+
 export const getReportVersionsApi = (id) =>
   axiosInstance.get(`/api/reports/${id}/versions`).then((res) => res.data);
+
+export const getSummaryApi = (params = {}) =>
+  axiosInstance.get("/api/dashboard/summary", { params }).then((res) => res.data);
+
+export const getAllReportsApi = (params = {}) =>
+  axiosInstance.get("/api/reports", { params }).then((res) => res.data);

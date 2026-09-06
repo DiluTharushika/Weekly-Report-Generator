@@ -323,10 +323,50 @@ const submitReport = async (req, res, next) => {
   }
 };
 
+/**
+ * PUT /api/reports/:id/review
+ * Manager/Admin: approve or request changes on a report
+ */
+const reviewReport = async (req, res, next) => {
+  try {
+    const { id } = req.params;
+    const { status, managerComment = "" } = req.body;
+
+    if (![REPORT_STATUS.APPROVED, REPORT_STATUS.NEEDS_CORRECTION].includes(status)) {
+      res.status(400);
+      return res.json({ message: "Invalid review status" });
+    }
+
+    const report = await Report.findById(id);
+    if (!report) {
+      res.status(404);
+      return res.json({ message: "Report not found" });
+    }
+
+    report.status = status;
+    report.managerComment = managerComment;
+    report.lastReviewedAt = new Date();
+    report.reviewHistory.push({
+      action: status === REPORT_STATUS.APPROVED ? "APPROVE" : "REQUEST_CHANGES",
+      comment: managerComment,
+      reviewedBy: req.user.id,
+      version: report.currentVersion,
+      reviewedAt: new Date(),
+    });
+
+    await report.save();
+
+    res.json({ message: `Report set to ${status}`, report });
+  } catch (err) {
+    next(err);
+  }
+};
+
 module.exports = {
   createReport,
   getMyReports,
   getReportById,
   updateReport,
   submitReport,
+  reviewReport,
 };

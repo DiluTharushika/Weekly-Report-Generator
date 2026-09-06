@@ -7,9 +7,12 @@ const {
   getReportById,
   updateReport,
   submitReport,
+  reviewReport,
 } = require("../controllers/reportController");
 
 const { protect } = require("../middleware/authMiddleware");
+const { allowRoles } = require("../middleware/roleMiddleware");
+const { ROLES } = require("../utils/constants");
 
 const router = express.Router();
 
@@ -37,5 +40,8 @@ router.put("/:id", protect, updateReport);
 
 // Member submit
 router.put("/:id/submit", protect, submitReport);
+
+// Manager / Admin review report
+router.put("/:id/review", protect, allowRoles(ROLES.MANAGER, ROLES.ADMIN), reviewReport);
 
 module.exports = router;

@@ -27,33 +27,35 @@ export default function RegisterPage() {
 
   return (
     <AuthLayout
-      title="Create your account"
-      subtitle="Start submitting consistent weekly reports and track approvals."
+      title="Join your team workspace today."
+      subtitle="Create your account to start submitting weekly progress, logging key highlights, and collaborating."
     >
-      <h1 className="text-2xl font-semibold text-slate-900">Register</h1>
-      <p className="text-sm text-slate-500 mt-1">
-        Create a member account (admin assigns roles if needed).
-      </p>
+      <div className="mb-6">
+        <h2 className="text-2xl font-bold text-white tracking-tight">Create Account</h2>
+        <p className="text-xs text-slate-400 mt-1">
+          Standard member access (roles can be upgraded by workspace admins).
+        </p>
+      </div>
 
       {error && (
-        <div className="mt-4 rounded-xl border border-red-200 bg-red-50 px-4 py-3 text-sm text-red-700">
+        <div className="mb-5 rounded-2xl border border-red-500/30 bg-red-500/10 px-4 py-3 text-xs text-red-400 font-medium">
           {error}
         </div>
       )}
 
-      <form onSubmit={onSubmit} className="mt-6 space-y-4">
+      <form onSubmit={onSubmit} className="space-y-4">
         {/* Name */}
         <div>
-          <label className="block text-sm font-medium text-slate-700 mb-1">
-            Name
+          <label className="block text-xs font-semibold text-slate-300 mb-1.5 uppercase tracking-wider">
+            Full Name
           </label>
           <div className="relative">
-            <FiUser className="absolute left-3 top-1/2 -translate-y-1/2 text-slate-400" />
+            <FiUser className="absolute left-3.5 top-1/2 -translate-y-1/2 text-slate-500 text-base" />
             <input
-              className="w-full rounded-xl border border-slate-300 pl-10 pr-3 py-2.5 outline-none focus:ring-4 focus:ring-blue-100 focus:border-blue-500"
+              className="w-full rounded-xl border border-slate-800 bg-slate-950/70 pl-10 pr-4 py-2.5 text-sm text-slate-100 placeholder-slate-600 outline-none focus:border-indigo-500 focus:ring-2 focus:ring-indigo-500/20 transition-all"
               value={name}
               onChange={(e) => setName(e.target.value)}
-              placeholder="Your name"
+              placeholder="e.g. Alex Morgan"
               required
             />
           </div>
@@ -61,13 +63,13 @@ export default function RegisterPage() {
 
         {/* Email */}
         <div>
-          <label className="block text-sm font-medium text-slate-700 mb-1">
-            Email
+          <label className="block text-xs font-semibold text-slate-300 mb-1.5 uppercase tracking-wider">
+            Work Email Address
           </label>
           <div className="relative">
-            <FiMail className="absolute left-3 top-1/2 -translate-y-1/2 text-slate-400" />
+            <FiMail className="absolute left-3.5 top-1/2 -translate-y-1/2 text-slate-500 text-base" />
             <input
-              className="w-full rounded-xl border border-slate-300 pl-10 pr-3 py-2.5 outline-none focus:ring-4 focus:ring-blue-100 focus:border-blue-500"
+              className="w-full rounded-xl border border-slate-800 bg-slate-950/70 pl-10 pr-4 py-2.5 text-sm text-slate-100 placeholder-slate-600 outline-none focus:border-indigo-500 focus:ring-2 focus:ring-indigo-500/20 transition-all"
               value={email}
               onChange={(e) => setEmail(e.target.value)}
               type="email"
@@ -79,23 +81,23 @@ export default function RegisterPage() {
 
         {/* Password */}
         <div>
-          <label className="block text-sm font-medium text-slate-700 mb-1">
+          <label className="block text-xs font-semibold text-slate-300 mb-1.5 uppercase tracking-wider">
             Password
           </label>
           <div className="relative">
-            <FiLock className="absolute left-3 top-1/2 -translate-y-1/2 text-slate-400" />
+            <FiLock className="absolute left-3.5 top-1/2 -translate-y-1/2 text-slate-500 text-base" />
             <input
-              className="w-full rounded-xl border border-slate-300 pl-10 pr-12 py-2.5 outline-none focus:ring-4 focus:ring-blue-100 focus:border-blue-500"
+              className="w-full rounded-xl border border-slate-800 bg-slate-950/70 pl-10 pr-12 py-2.5 text-sm text-slate-100 placeholder-slate-600 outline-none focus:border-indigo-500 focus:ring-2 focus:ring-indigo-500/20 transition-all"
               value={password}
               onChange={(e) => setPassword(e.target.value)}
               type={showPw ? "text" : "password"}
-              placeholder="Min 6 characters"
+              placeholder="Minimum 6 characters"
               required
             />
             <button
               type="button"
               onClick={() => setShowPw((v) => !v)}
-              className="absolute right-3 top-1/2 -translate-y-1/2 text-slate-500 hover:text-slate-700"
+              className="absolute right-3.5 top-1/2 -translate-y-1/2 text-slate-500 hover:text-slate-300 cursor-pointer"
               aria-label="Toggle password visibility"
             >
               {showPw ? <FiEyeOff /> : <FiEye />}
@@ -104,19 +106,21 @@ export default function RegisterPage() {
         </div>
 
         <button
-          className="w-full rounded-xl bg-emerald-600 text-white py-2.5 font-medium shadow-sm hover:bg-emerald-700 focus:outline-none focus:ring-4 focus:ring-emerald-200 disabled:opacity-60"
+          className="w-full rounded-xl bg-gradient-to-r from-emerald-600 to-teal-600 text-white py-3 text-sm font-semibold shadow-lg shadow-emerald-600/25 hover:from-emerald-500 hover:to-teal-500 focus:outline-none focus:ring-2 focus:ring-emerald-500/40 disabled:opacity-50 transition-all cursor-pointer mt-2"
           disabled={loading}
           type="submit"
         >
-          {loading ? "Creating..." : "Create account"}
+          {loading ? "Creating Account..." : "Register Account"}
         </button>
 
-        <p className="text-sm text-slate-600 text-center">
-          Already have an account?{" "}
-          <Link className="text-blue-600 hover:underline" to="/login">
-            Login
-          </Link>
-        </p>
+        <div className="pt-4 border-t border-slate-800/80 text-center">
+          <p className="text-xs text-slate-400">
+            Already registered?{" "}
+            <Link className="text-indigo-400 font-semibold hover:text-indigo-300 hover:underline ml-1" to="/login">
+              Sign In
+            </Link>
+          </p>
+        </div>
       </form>
     </AuthLayout>
   );

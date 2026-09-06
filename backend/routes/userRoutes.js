@@ -14,9 +14,9 @@ const { ROLES } = require("../utils/constants");
 
 const router = express.Router();
 
-// Admin only
-router.get("/", protect, allowRoles(ROLES.ADMIN), listUsers);
-router.get("/:id", protect, allowRoles(ROLES.ADMIN), getUserById);
+// Admin & Manager
+router.get("/", protect, allowRoles(ROLES.ADMIN, ROLES.MANAGER), listUsers);
+router.get("/:id", protect, allowRoles(ROLES.ADMIN, ROLES.MANAGER), getUserById);
 
 router.put(
   "/:id/role",
