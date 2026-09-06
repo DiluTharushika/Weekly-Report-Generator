@@ -15,7 +15,7 @@ import MemberDashboard from "./pages/member/MemberDashboard.jsx";
 import ReportHistoryPage from "./pages/member/ReportHistoryPage.jsx";
 import CreateReportPage from "./pages/member/CreateReportPage.jsx";
 import EditReportPage from "./pages/member/EditReportPage.jsx";
-
+import UsersPage from "./pages/manager/UsersPage.jsx";
 import ReportDetailPage from "./pages/common/ReportDetailPage.jsx";
 
 import ManagerDashboard from "./pages/manager/ManagerDashboard.jsx";
@@ -79,13 +79,15 @@ export default function App() {
                   { to: "/manager", label: "Dashboard" },
                   { to: "/manager/reports", label: "Team Reports" },
                   { to: "/manager/projects", label: "Projects" },
+                { to: "/manager/users", label: "Users" },
                 ]}
               />
             }
           >
             <Route path="/manager" element={<ManagerDashboard />} />
             <Route path="/manager/reports" element={<TeamReportsPage />} />
-            <Route path="/manager/reports/:id/review" element={<ReviewReportPage />} />
+
+<Route path="/manager/users" element={<UsersPage />} />            <Route path="/manager/reports/:id/review" element={<ReviewReportPage />} />
             <Route path="/manager/projects" element={<ProjectsPage />} />
           </Route>
         </Route>
