@@ -20,14 +20,14 @@ import ReportDetailPage from "./pages/common/ReportDetailPage.jsx";
 
 import ManagerDashboard from "./pages/manager/ManagerDashboard.jsx";
 import TeamReportsPage from "./pages/manager/TeamReportsPage.jsx";
+import ReviewReportPage from "./pages/manager/ReviewReportPage.jsx";
+import ProjectsPage from "./pages/manager/ProjectsPage.jsx";
 
 import { ROLES } from "./utils/constants.js";
 
 function HomeRedirect() {
   const { user } = useSelector((s) => s.auth);
-
   if (!user) return <div className="p-6">Loading...</div>;
-
   if (user.role === ROLES.MEMBER) return <Navigate to="/member" replace />;
   return <Navigate to="/manager" replace />;
 }
@@ -43,18 +43,12 @@ export default function App() {
   return (
     <BrowserRouter>
       <Routes>
-        {/* Home */}
-        <Route
-          path="/"
-          element={token ? <HomeRedirect /> : <Navigate to="/login" replace />}
-        />
-
-        {/* Public */}
+        <Route path="/" element={token ? <HomeRedirect /> : <Navigate to="/login" replace />} />
         <Route path="/login" element={<LoginPage />} />
         <Route path="/register" element={<RegisterPage />} />
         <Route path="/unauthorized" element={<Unauthorized />} />
 
-        {/* MEMBER area (Protected + Layout) */}
+        {/* Member */}
         <Route element={<ProtectedRoute allowedRoles={[ROLES.MEMBER]} />}>
           <Route
             element={
@@ -75,7 +69,7 @@ export default function App() {
           </Route>
         </Route>
 
-        {/* MANAGER/ADMIN area (Protected + Layout) */}
+        {/* Manager */}
         <Route element={<ProtectedRoute allowedRoles={[ROLES.MANAGER, ROLES.ADMIN]} />}>
           <Route
             element={
@@ -84,27 +78,23 @@ export default function App() {
                 links={[
                   { to: "/manager", label: "Dashboard" },
                   { to: "/manager/reports", label: "Team Reports" },
+                  { to: "/manager/projects", label: "Projects" },
                 ]}
               />
             }
           >
             <Route path="/manager" element={<ManagerDashboard />} />
             <Route path="/manager/reports" element={<TeamReportsPage />} />
-
-            {/* placeholder until we build review page */}
-            <Route
-              path="/manager/reports/:id/review"
-              element={<div className="p-6">Review Page (TODO)</div>}
-            />
+            <Route path="/manager/reports/:id/review" element={<ReviewReportPage />} />
+            <Route path="/manager/projects" element={<ProjectsPage />} />
           </Route>
         </Route>
 
-        {/* Report detail route (both member + manager can view) */}
+        {/* Report detail */}
         <Route element={<ProtectedRoute />}>
           <Route path="/reports/:id" element={<ReportDetailPage />} />
         </Route>
 
-        {/* 404 */}
         <Route path="*" element={<NotFound />} />
       </Routes>
     </BrowserRouter>
