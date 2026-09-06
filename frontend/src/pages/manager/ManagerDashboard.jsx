@@ -4,6 +4,7 @@ import { getDashboardSummaryApi } from "../../api/dashboardApi.js";
 import { reviewReportApi } from "../../api/reportApi.js";
 import StatusByMemberChart from "../../components/dashboard/StatusByMemberChart.jsx";
 import StatusPieChart from "../../components/dashboard/StatusPieChart.jsx";
+import HoursBreakdownChart from "../../components/dashboard/HoursBreakdownChart.jsx";
 import { 
   FiFileText, 
   FiCheckCircle, 
@@ -123,6 +124,56 @@ export default function ManagerDashboard() {
         <div className="text-xs text-slate-500">No summary data available.</div>
       ) : (
         <>
+          {/* TEAM PULSE & Needs Attention Section */}
+          <div className="grid grid-cols-1 lg:grid-cols-12 gap-6">
+            <div className="lg:col-span-8 rounded-2xl bg-gradient-to-br from-slate-900 via-indigo-950 to-slate-900 p-6 text-white shadow-lg space-y-4">
+              <div className="flex items-center justify-between border-b border-white/10 pb-3">
+                <div className="text-xs font-bold uppercase tracking-wider text-indigo-300 flex items-center gap-2">
+                  <span className="h-2 w-2 rounded-full bg-emerald-400 animate-pulse" /> Team Pulse & Operational Health
+                </div>
+                <span className="text-xs font-bold px-2.5 py-0.5 rounded-full bg-emerald-500/20 text-emerald-300 border border-emerald-500/30">
+                  {summary.complianceRate || 0}% Execution Health
+                </span>
+              </div>
+
+              <div className="grid grid-cols-3 gap-4 text-center">
+                <div className="p-3 rounded-xl bg-white/5 border border-white/10">
+                  <div className="text-xs text-slate-300">Submitted Reports</div>
+                  <div className="text-xl font-extrabold text-blue-400 mt-1">🟢 {summary.submittedCount || 0}</div>
+                </div>
+                <div className="p-3 rounded-xl bg-white/5 border border-white/10">
+                  <div className="text-xs text-slate-300">Needs Revision</div>
+                  <div className="text-xl font-extrabold text-amber-400 mt-1">🟡 {summary.needsCorrectionCount || 0}</div>
+                </div>
+                <div className="p-3 rounded-xl bg-white/5 border border-white/10">
+                  <div className="text-xs text-slate-300">Open Blockers</div>
+                  <div className="text-xl font-extrabold text-red-400 mt-1">🔴 {summary.openBlockersCount || 0}</div>
+                </div>
+              </div>
+            </div>
+
+            <div className="lg:col-span-4 rounded-2xl border border-amber-200 bg-amber-50/70 p-6 shadow-xs flex flex-col justify-between">
+              <div>
+                <div className="text-xs font-bold text-amber-800 uppercase tracking-wider flex items-center gap-1.5 mb-2">
+                  <FiAlertTriangle className="text-amber-600 text-base" /> Needs Attention
+                </div>
+                <p className="text-xs text-amber-900 leading-relaxed">
+                  {summary.needsCorrectionCount > 0
+                    ? `${summary.needsCorrectionCount} report(s) are currently in Needs Correction status awaiting member revisions.`
+                    : summary.submittedCount > 0
+                    ? `${summary.submittedCount} report(s) submitted are awaiting manager review & approval.`
+                    : "All team reports are currently up to date."}
+                </p>
+              </div>
+              <Link
+                to="/manager/reports"
+                className="mt-4 inline-flex items-center justify-center gap-1.5 rounded-xl bg-amber-600 px-4 py-2 text-xs font-bold text-white hover:bg-amber-700 transition-colors"
+              >
+                Review Team Submissions →
+              </Link>
+            </div>
+          </div>
+
           {/* Top Metric Cards */}
           <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
             <div className="rounded-2xl border border-slate-200/80 bg-white p-5 shadow-xs">
@@ -162,7 +213,7 @@ export default function ManagerDashboard() {
             </div>
           </div>
 
-          {/* Interactive Visualizations Row */}
+          {/* Interactive Visualizations Row 1 */}
           <div className="grid grid-cols-1 lg:grid-cols-12 gap-6">
             <div className="lg:col-span-7 rounded-2xl border border-slate-200/80 bg-white shadow-xs p-5">
               <div className="flex items-center justify-between pb-4 border-b border-slate-100">
@@ -193,6 +244,25 @@ export default function ManagerDashboard() {
               </div>
               <div className="mt-4">
                 <StatusPieChart summary={summary} />
+              </div>
+            </div>
+          </div>
+
+          {/* Interactive Visualizations Row 2: Workload & Hours Spent by Task Type */}
+          <div className="grid grid-cols-1 lg:grid-cols-12 gap-6">
+            <div className="lg:col-span-12 rounded-2xl border border-slate-200/80 bg-white shadow-xs p-5">
+              <div className="flex items-center justify-between pb-4 border-b border-slate-100">
+                <div>
+                  <h3 className="text-base font-bold text-slate-900 tracking-tight flex items-center gap-2">
+                    <FiClock className="text-indigo-600" /> Workload & Time Spent by Task Type (Team-Wide)
+                  </h3>
+                  <p className="text-xs text-slate-500 mt-0.5">
+                    Total hours dedicated across Development, Testing, Meetings, Documentation, and Other
+                  </p>
+                </div>
+              </div>
+              <div className="mt-4">
+                <HoursBreakdownChart hoursBreakdown={summary.hoursBreakdown} />
               </div>
             </div>
           </div>

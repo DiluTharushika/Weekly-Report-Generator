@@ -51,7 +51,44 @@ const getDashboardSummary = async (req, res, next) => {
 
     const compliedCount = submittedCount + needsCorrectionCount + approvedCount;
     const complianceRate =
-      totalMembers > 0 ? Math.round((compliedCount / totalMembers) * 100) : 0;
+      totalMembers > 0
+        ? Math.min(100, Math.round((compliedCount / Math.max(1, totalMembers)) * 100))
+        : 0;
+
+    // Open blockers count & hours breakdown aggregation across reports
+    let openBlockersCount = 0;
+    const hoursBreakdown = { development: 0, testing: 0, meetings: 0, documentation: 0, other: 0 };
+    const projectDistributionMap = {};
+    let totalTasksCompletedCount = 0;
+
+    statusByMemberRaw.forEach((r) => {
+      // Blockers
+      if (Array.isArray(r.blockers)) {
+        openBlockersCount += r.blockers.length;
+      }
+      // Hours
+      if (r.hoursBreakdown) {
+        hoursBreakdown.development += r.hoursBreakdown.development || 0;
+        hoursBreakdown.testing += r.hoursBreakdown.testing || 0;
+        hoursBreakdown.meetings += r.hoursBreakdown.meetings || 0;
+        hoursBreakdown.documentation += r.hoursBreakdown.documentation || 0;
+        hoursBreakdown.other += r.hoursBreakdown.other || 0;
+      }
+      // Tasks completed count
+      if (Array.isArray(r.tasksCompleted)) {
+        totalTasksCompletedCount += r.tasksCompleted.length;
+      }
+    });
+
+    recentReportsRaw.forEach((r) => {
+      const pName = r.project?.name || "General";
+      projectDistributionMap[pName] = (projectDistributionMap[pName] || 0) + 1;
+    });
+
+    const projectDistribution = Object.entries(projectDistributionMap).map(([name, value]) => ({
+      name,
+      value,
+    }));
 
     const statusByMemberMap = {};
     statusByMemberRaw.forEach((r) => {
@@ -85,6 +122,10 @@ const getDashboardSummary = async (req, res, next) => {
       approvedCount,
       draftCount,
       complianceRate,
+      openBlockersCount,
+      hoursBreakdown,
+      projectDistribution,
+      totalTasksCompletedCount,
       statusByMember,
       recentReports,
     });

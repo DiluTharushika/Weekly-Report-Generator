@@ -241,6 +241,54 @@ export default function ReportDetailPage() {
 
       {/* Content */}
       <div className="mx-auto max-w-6xl px-4 py-6 space-y-4">
+
+        {/* Visual Report Audit Timeline */}
+        <div className="rounded-2xl border border-slate-200/80 bg-white p-5 shadow-xs">
+          <div className="text-xs font-bold text-slate-700 uppercase tracking-wider mb-4 flex items-center gap-2">
+            <FiClock className="text-indigo-600" /> Report Review Timeline & Audit Trail
+          </div>
+          <div className="grid grid-cols-1 sm:grid-cols-4 gap-3 relative">
+            {[
+              {
+                step: "1. Created (Draft)",
+                status: "Draft",
+                time: new Date(report.createdAt).toLocaleString(),
+                active: true,
+              },
+              {
+                step: "2. Submitted for Review",
+                status: "Submitted",
+                time: report.lastSubmittedAt ? new Date(report.lastSubmittedAt).toLocaleString() : "Pending",
+                active: ["Submitted", "Needs Correction", "Approved"].includes(report.status),
+              },
+              {
+                step: "3. Review / Revision",
+                status: "Needs Correction",
+                time: report.lastReviewedAt ? new Date(report.lastReviewedAt).toLocaleString() : "Pending",
+                active: ["Needs Correction", "Approved"].includes(report.status),
+              },
+              {
+                step: "4. Final Approval",
+                status: "Approved",
+                time: report.status === "Approved" ? (report.lastReviewedAt ? new Date(report.lastReviewedAt).toLocaleString() : "Approved") : "Pending",
+                active: report.status === "Approved",
+              },
+            ].map((st, i) => (
+              <div
+                key={i}
+                className={`p-3.5 rounded-xl border transition-all ${
+                  st.active
+                    ? "border-indigo-200 bg-indigo-50/40 text-indigo-950 font-medium"
+                    : "border-slate-100 bg-slate-50/50 text-slate-400"
+                }`}
+              >
+                <div className="text-xs font-bold">{st.step}</div>
+                <div className="text-[11px] mt-1">{st.time}</div>
+              </div>
+            ))}
+          </div>
+        </div>
+
         {/* Quick-glance overview strip */}
         {stats && (
           <div className="grid grid-cols-2 lg:grid-cols-4 gap-4">
