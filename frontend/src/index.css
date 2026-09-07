@@ -1,9 +1,241 @@
 @import "tailwindcss";
 
+@custom-variant dark (&:where(.dark, .dark *));
+
 html, body, #root {
   height: 100%;
 }
 
 body {
   margin: 0;
+  transition: background-color 0.3s ease, color 0.3s ease;
+}
+
+/* ============================================================
+   LIGHT MODE — clean, blue-accented professional look
+   ============================================================ */
+
+body {
+  background-color: #f1f5f9;
+  color: #0f172a;
+}
+
+/* ============================================================
+   DARK MODE BASE
+   ============================================================ */
+
+.dark body,
+.dark #root {
+  background-color: #050c18;
+  color: #cbd5e1;
+}
+
+/* ============================================================
+   DARK MODE SURFACE OVERRIDES
+   Forces all white/light surfaces → deep dark glass
+   ============================================================ */
+
+/* bg-white → dark glass panel */
+.dark .bg-white {
+  background-color: rgba(10, 18, 35, 0.85) !important;
+  backdrop-filter: blur(16px);
+  -webkit-backdrop-filter: blur(16px);
+}
+
+/* bg-slate-50 shades */
+.dark .bg-slate-50 {
+  background-color: rgba(7, 14, 28, 0.9) !important;
+}
+.dark .bg-slate-50\/50,
+.dark .bg-slate-50\/40,
+.dark .bg-slate-50\/70 {
+  background-color: rgba(7, 14, 28, 0.5) !important;
+}
+
+/* Table hover rows */
+.dark .hover\:bg-slate-50\/60:hover {
+  background-color: rgba(30, 41, 59, 0.4) !important;
+}
+.dark .hover\:bg-slate-100:hover {
+  background-color: rgba(30, 41, 59, 0.5) !important;
+}
+
+/* thead background */
+.dark .bg-slate-50\/70,
+.dark .bg-slate-50\/80 {
+  background-color: rgba(15, 23, 42, 0.8) !important;
+}
+
+/* ============================================================
+   DARK MODE BORDER OVERRIDES
+   ============================================================ */
+
+.dark .border-slate-100 {
+  border-color: rgba(30, 41, 59, 0.5) !important;
+}
+.dark .border-slate-200,
+.dark .border-slate-200\/80,
+.dark .border-slate-200\/60 {
+  border-color: rgba(51, 65, 85, 0.5) !important;
+}
+.dark .border-slate-300 {
+  border-color: rgba(51, 65, 85, 0.6) !important;
+}
+
+/* Dividers */
+.dark .divide-slate-100 > * + * {
+  border-color: rgba(30, 41, 59, 0.6) !important;
+}
+
+/* Color borders for badges */
+.dark .border-blue-200,
+.dark .border-blue-200\/80 { border-color: rgba(30, 64, 175, 0.4) !important; }
+.dark .border-amber-200,
+.dark .border-amber-200\/80 { border-color: rgba(146, 64, 14, 0.4) !important; }
+.dark .border-emerald-200,
+.dark .border-emerald-200\/80 { border-color: rgba(6, 78, 59, 0.4) !important; }
+.dark .border-red-200 { border-color: rgba(153, 27, 27, 0.4) !important; }
+.dark .border-indigo-200 { border-color: rgba(67, 56, 202, 0.35) !important; }
+
+/* ============================================================
+   DARK MODE TEXT OVERRIDES
+   ============================================================ */
+
+.dark .text-slate-900 { color: #f1f5f9 !important; }
+.dark .text-slate-800 { color: #e2e8f0 !important; }
+.dark .text-slate-700 { color: #cbd5e1 !important; }
+.dark .text-slate-600 { color: #94a3b8 !important; }
+.dark .text-slate-500 { color: #64748b !important; }
+.dark .text-slate-400 { color: #475569 !important; }
+
+/* Colored text for status badges */
+.dark .text-blue-700 { color: #93c5fd !important; }
+.dark .text-amber-800 { color: #fcd34d !important; }
+.dark .text-amber-900 { color: #fde68a !important; }
+.dark .text-emerald-700 { color: #6ee7b7 !important; }
+.dark .text-red-700 { color: #fca5a5 !important; }
+.dark .text-indigo-600 { color: #a5b4fc !important; }
+
+/* ============================================================
+   DARK MODE BACKGROUND OVERRIDES for status badges & chips
+   ============================================================ */
+
+.dark .bg-slate-100 {
+  background-color: rgba(30, 41, 59, 0.6) !important;
+}
+.dark .bg-blue-50 {
+  background-color: rgba(23, 37, 84, 0.5) !important;
+}
+.dark .bg-amber-50,
+.dark .bg-amber-50\/40,
+.dark .bg-amber-50\/70 {
+  background-color: rgba(69, 26, 3, 0.4) !important;
+}
+.dark .bg-emerald-50,
+.dark .bg-emerald-50\/40 {
+  background-color: rgba(6, 46, 30, 0.4) !important;
+}
+.dark .bg-red-50,
+.dark .bg-red-100 {
+  background-color: rgba(69, 10, 10, 0.4) !important;
+}
+.dark .bg-emerald-100 {
+  background-color: rgba(6, 46, 30, 0.5) !important;
+}
+.dark .bg-indigo-50,
+.dark .bg-indigo-50\/30,
+.dark .bg-indigo-50\/50 {
+  background-color: rgba(30, 27, 75, 0.3) !important;
+}
+
+/* ============================================================
+   DARK MODE: INPUTS, SELECTS, TEXTAREAS
+   ============================================================ */
+
+.dark input,
+.dark textarea,
+.dark select {
+  background-color: rgba(7, 14, 28, 0.8) !important;
+  border-color: rgba(51, 65, 85, 0.6) !important;
+  color: #e2e8f0 !important;
+}
+.dark input::placeholder,
+.dark textarea::placeholder {
+  color: #475569 !important;
+}
+.dark input:focus,
+.dark textarea:focus,
+.dark select:focus {
+  border-color: rgba(234, 179, 8, 0.6) !important;
+  box-shadow: 0 0 0 3px rgba(234, 179, 8, 0.1) !important;
+}
+
+/* ============================================================
+   GLOBAL SELECT STYLE — Rounded corners, proper appearance
+   ============================================================ */
+
+select {
+  -webkit-appearance: none;
+  -moz-appearance: none;
+  appearance: none;
+  background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='12' height='12' viewBox='0 0 24 24' fill='none' stroke='%2394a3b8' stroke-width='2.5' stroke-linecap='round' stroke-linejoin='round'%3E%3Cpolyline points='6 9 12 15 18 9'%3E%3C/polyline%3E%3C/svg%3E");
+  background-repeat: no-repeat;
+  background-position: right 0.65rem center;
+  padding-right: 2rem !important;
+  border-radius: 0.75rem;
+  cursor: pointer;
+}
+
+/* Dark mode chevron — lighter */
+.dark select {
+  background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='12' height='12' viewBox='0 0 24 24' fill='none' stroke='%2364748b' stroke-width='2.5' stroke-linecap='round' stroke-linejoin='round'%3E%3Cpolyline points='6 9 12 15 18 9'%3E%3C/polyline%3E%3C/svg%3E");
+}
+
+/* ============================================================
+   LIGHT MODE: select & input focus — blue outline
+   ============================================================ */
+
+input:focus,
+textarea:focus,
+select:focus {
+  outline: none;
+  border-color: #3b82f6 !important;
+  box-shadow: 0 0 0 3px rgba(59, 130, 246, 0.12) !important;
+}
+
+/* ============================================================
+   GLASSMORPHISM HELPERS
+   ============================================================ */
+
+.glass {
+  background: rgba(10, 18, 35, 0.75);
+  backdrop-filter: blur(20px);
+  -webkit-backdrop-filter: blur(20px);
+  border: 1px solid rgba(255, 255, 255, 0.06);
+}
+
+.glass-light {
+  background: rgba(255, 255, 255, 0.88);
+  backdrop-filter: blur(12px);
+  -webkit-backdrop-filter: blur(12px);
+  border: 1px solid rgba(226, 232, 240, 0.8);
+}
+
+/* ============================================================
+   CUSTOM DARK SCROLLBARS
+   ============================================================ */
+
+.dark ::-webkit-scrollbar {
+  width: 6px;
+  height: 6px;
+}
+.dark ::-webkit-scrollbar-track {
+  background: #050c18;
+}
+.dark ::-webkit-scrollbar-thumb {
+  background: #1e293b;
+  border-radius: 4px;
+}
+.dark ::-webkit-scrollbar-thumb:hover {
+  background: #334155;
 }
