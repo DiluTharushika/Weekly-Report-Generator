@@ -11,8 +11,8 @@ const inputCls =
   "border-slate-200 dark:border-slate-700/80 " +
   "text-slate-800 dark:text-slate-100 " +
   "placeholder-slate-400 dark:placeholder-slate-600 " +
-  "focus:border-blue-500 dark:focus:border-yellow-500 " +
-  "focus:ring-2 focus:ring-blue-500/15 dark:focus:ring-yellow-500/15";
+  "focus:border-blue-500 dark:focus:border-blue-500 " +
+  "focus:ring-2 focus:ring-blue-500/15 dark:focus:ring-blue-500/15";
 
 const cardCls =
   "rounded-2xl border shadow-sm " +
@@ -20,7 +20,7 @@ const cardCls =
   "border-slate-200 dark:border-slate-800/80 " +
   "shadow-slate-100 dark:shadow-slate-950/50";
 
-const SectionHeader = ({ icon: Icon, title, subtitle, iconColor = "text-blue-600 dark:text-yellow-400" }) => (
+const SectionHeader = ({ icon: Icon, title, subtitle, iconColor = "text-blue-600 dark:text-blue-400" }) => (
   <div className="flex items-start gap-3 pb-4 border-b border-slate-100 dark:border-slate-800/80 mb-5">
     <div className={`p-2 rounded-xl bg-blue-50 dark:bg-slate-800/80 ${iconColor}`}>
       <Icon className="text-base" />
@@ -92,7 +92,7 @@ export default function ProfilePage() {
           {/* Avatar + name */}
           <div className="flex flex-col sm:flex-row sm:items-end sm:justify-between gap-4 -mt-10 relative z-10">
             <div className="flex items-end gap-4">
-              <div className="h-20 w-20 rounded-2xl bg-gradient-to-br from-blue-500 to-indigo-600 dark:from-yellow-400 dark:to-amber-500 flex items-center justify-center text-white dark:text-slate-950 text-3xl font-black shadow-xl shadow-blue-500/30 dark:shadow-yellow-500/20 border-4 border-white dark:border-slate-900 shrink-0">
+              <div className="h-20 w-20 rounded-2xl bg-gradient-to-br from-blue-500 to-indigo-600 dark:from-blue-500 dark:to-indigo-600 flex items-center justify-center text-white dark:text-slate-100 text-3xl font-black shadow-xl shadow-blue-500/30 dark:shadow-blue-500/20 border-4 border-white dark:border-slate-900 shrink-0">
                 {user?.name ? user.name.charAt(0).toUpperCase() : "U"}
               </div>
               <div className="mb-1">
@@ -127,7 +127,7 @@ export default function ProfilePage() {
                 bg-slate-50 dark:bg-slate-800/50
                 border-slate-100 dark:border-slate-700/60">
                 <div className="flex items-center justify-center mb-1">
-                  <Icon className="text-sm text-blue-500 dark:text-yellow-400" />
+                  <Icon className="text-sm text-blue-500 dark:text-blue-400" />
                 </div>
                 <div className="text-[10px] font-bold uppercase tracking-wider text-slate-400 dark:text-slate-500 mb-0.5">{label}</div>
                 <div className="text-xs font-bold text-slate-800 dark:text-slate-200 leading-tight">{value}</div>
@@ -231,7 +231,7 @@ export default function ProfilePage() {
               type="submit"
               className="inline-flex items-center gap-2 rounded-xl px-5 py-2.5 text-xs font-bold text-white cursor-pointer transition-all shadow-lg
                 bg-gradient-to-r from-blue-600 to-indigo-600 hover:from-blue-500 hover:to-indigo-500 shadow-blue-600/20
-                dark:from-yellow-500 dark:to-amber-500 dark:text-slate-950 dark:hover:from-yellow-400 dark:hover:to-amber-400 dark:shadow-yellow-500/20"
+                dark:from-blue-600 dark:to-indigo-600 dark:text-slate-100 dark:hover:from-blue-500 dark:hover:to-indigo-500 dark:shadow-blue-500/20"
             >
               <FiLock /> Update Password
             </button>
@@ -245,7 +245,7 @@ export default function ProfilePage() {
           icon={FiBell}
           title="Notification Preferences"
           subtitle="Control how you receive alerts and report reminders"
-          iconColor="text-amber-600 dark:text-yellow-400"
+          iconColor="text-amber-600 dark:text-blue-400"
         />
         <div className="space-y-3">
           {[
@@ -262,7 +262,7 @@ export default function ProfilePage() {
                 <div className="text-[11px] text-slate-400 dark:text-slate-500 mt-0.5">{desc}</div>
               </div>
               <div className={`relative w-10 h-5 rounded-full transition-colors cursor-pointer ${
-                checked ? "bg-blue-500 dark:bg-yellow-500" : "bg-slate-300 dark:bg-slate-700"
+                checked ? "bg-blue-500 dark:bg-blue-500" : "bg-slate-300 dark:bg-slate-700"
               }`}>
                 <div className={`absolute top-0.5 h-4 w-4 rounded-full bg-white shadow transition-transform ${
                   checked ? "translate-x-5" : "translate-x-0.5"

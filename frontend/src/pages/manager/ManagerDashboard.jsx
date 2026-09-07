@@ -100,7 +100,7 @@ export default function ManagerDashboard() {
   if (loading) return (
     <div className="flex items-center justify-center h-64">
       <div className="flex items-center gap-3 text-sm text-slate-400 dark:text-slate-500">
-        <div className="h-4 w-4 rounded-full border-2 border-blue-500 dark:border-yellow-500 border-t-transparent animate-spin" />
+        <div className="h-4 w-4 rounded-full border-2 border-blue-500 border-t-transparent animate-spin" />
         Loading dashboard...
       </div>
     </div>
@@ -116,7 +116,7 @@ export default function ManagerDashboard() {
         dark:border dark:border-blue-900/30">
         {/* Decorative glows */}
         <div className="absolute -top-16 -right-16 h-72 w-72 rounded-full bg-white/10 dark:bg-blue-600/15 blur-3xl" />
-        <div className="absolute -bottom-10 -left-10 h-48 w-48 rounded-full bg-indigo-300/20 dark:bg-yellow-500/10 blur-3xl" />
+        <div className="absolute -bottom-10 -left-10 h-48 w-48 rounded-full bg-indigo-300/20 dark:bg-blue-500/10 blur-3xl" />
 
         <div className="relative z-10 flex flex-col sm:flex-row sm:items-center justify-between gap-4">
           <div>
@@ -124,7 +124,7 @@ export default function ManagerDashboard() {
               bg-white/15 dark:bg-blue-500/15
               text-white dark:text-blue-300
               border border-white/20 dark:border-blue-500/25">
-              <FiClock className="text-yellow-300 dark:text-yellow-400" /> All-Time Team Overview
+              <FiClock className="text-yellow-300 dark:text-blue-400" /> All-Time Team Overview
             </div>
             <h1 className="text-2xl sm:text-3xl font-extrabold tracking-tight text-white">
               Executive Review & Analytics Hub 📊
@@ -135,10 +135,10 @@ export default function ManagerDashboard() {
           </div>
           <div className="shrink-0">
             <div className="px-5 py-4 rounded-2xl text-center
-              bg-white/15 dark:bg-yellow-500/10
-              border border-white/20 dark:border-yellow-500/25">
+              bg-white/15 dark:bg-blue-500/10
+              border border-white/20 dark:border-blue-500/25">
               <div className="text-xs text-blue-100 dark:text-slate-400 font-medium">Compliance Rate</div>
-              <div className="text-2xl font-black text-white dark:text-yellow-400 mt-0.5">
+              <div className="text-2xl font-black text-white dark:text-blue-400 mt-0.5">
                 {summary?.complianceRate || 0}%
               </div>
             </div>
@@ -170,16 +170,16 @@ export default function ManagerDashboard() {
                   Team Pulse & Operational Health
                 </div>
                 <span className="text-xs font-bold px-2.5 py-0.5 rounded-full
-                  bg-white/15 dark:bg-emerald-500/15
-                  text-white dark:text-emerald-400
-                  border border-white/25 dark:border-emerald-500/25">
+                  bg-white/15 dark:bg-blue-500/15
+                  text-white dark:text-blue-300
+                  border border-white/25 dark:border-blue-500/25">
                   {summary.complianceRate || 0}% Execution Health
                 </span>
               </div>
               <div className="grid grid-cols-3 gap-4 text-center">
                 {[
                   { label: "Submitted", count: summary.submittedCount || 0, emoji: "🟢", color: "text-white dark:text-blue-300" },
-                  { label: "Needs Revision", count: summary.needsCorrectionCount || 0, emoji: "🟡", color: "text-yellow-200 dark:text-yellow-400" },
+                  { label: "Needs Revision", count: summary.needsCorrectionCount || 0, emoji: "🟡", color: "text-yellow-200 dark:text-amber-400" },
                   { label: "Open Blockers", count: summary.openBlockersCount || 0, emoji: "🔴", color: "text-red-200 dark:text-red-400" },
                 ].map((item) => (
                   <div key={item.label} className="p-3 rounded-xl
@@ -194,8 +194,8 @@ export default function ManagerDashboard() {
 
             {/* Needs Attention */}
             <div className="lg:col-span-4 rounded-2xl border p-6 shadow-sm flex flex-col justify-between
-              bg-blue-50 dark:bg-amber-500/8
-              border-blue-200 dark:border-amber-500/25">
+              bg-blue-50 dark:bg-amber-500/5
+              border-blue-200 dark:border-amber-500/20">
               <div>
                 <div className="text-xs font-bold uppercase tracking-wider flex items-center gap-1.5 mb-2
                   text-blue-700 dark:text-amber-400">
@@ -231,8 +231,8 @@ export default function ManagerDashboard() {
               iconBg="bg-blue-100 dark:bg-blue-500/15" iconColor="text-blue-600 dark:text-blue-400"
               icon={FiClock} valueCls="text-blue-600 dark:text-blue-400" />
             <MetricCard label="Needs Correction" value={summary.needsCorrectionCount || 0} sub="Requires revisions"
-              iconBg="bg-amber-100 dark:bg-yellow-500/15" iconColor="text-amber-600 dark:text-yellow-400"
-              icon={FiAlertTriangle} valueCls="text-amber-600 dark:text-yellow-400" />
+              iconBg="bg-amber-100 dark:bg-amber-500/15" iconColor="text-amber-600 dark:text-amber-400"
+              icon={FiAlertTriangle} valueCls="text-amber-600 dark:text-amber-400" />
             <MetricCard label="Approved" value={summary.approvedCount || 0} sub="Approved deliverables"
               iconBg="bg-emerald-100 dark:bg-emerald-500/15" iconColor="text-emerald-600 dark:text-emerald-400"
               icon={FiCheckCircle} valueCls="text-emerald-600 dark:text-emerald-400" />
@@ -256,7 +256,7 @@ export default function ManagerDashboard() {
               <div className="flex items-center justify-between pb-4 border-b border-slate-200 dark:border-slate-800/80">
                 <div>
                   <h3 className="text-base font-bold text-slate-900 dark:text-slate-100 tracking-tight flex items-center gap-2">
-                    <FiPieChart className="text-blue-600 dark:text-yellow-400" /> Team Status Ratio
+                    <FiPieChart className="text-blue-600 dark:text-blue-400" /> Team Status Ratio
                   </h3>
                   <p className="text-xs text-slate-400 dark:text-slate-500 mt-0.5">Overall percentage breakdown of submissions</p>
                 </div>
@@ -351,8 +351,8 @@ export default function ManagerDashboard() {
                                 bg-white dark:bg-slate-900/80
                                 text-slate-800 dark:text-slate-200
                                 placeholder-slate-400 dark:placeholder-slate-600
-                                focus:border-blue-500 dark:focus:border-yellow-500
-                                focus:ring-2 focus:ring-blue-500/15 dark:focus:ring-yellow-500/15"
+                                focus:border-blue-500 dark:focus:border-blue-500
+                                focus:ring-2 focus:ring-blue-500/15 dark:focus:ring-blue-500/15"
                               placeholder="Add appraisal feedback or reasons for correction..."
                               value={reviewComment}
                               onChange={(e) => setReviewComment(e.target.value)}
