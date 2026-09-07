@@ -22,7 +22,7 @@ app.use("/api/projects", require("./routes/projectRoutes"));
 app.use("/api/reports", require("./routes/reportRoutes"));
 app.use("/api/users", require("./routes/userRoutes"));
 app.use("/api/dashboard", require("./routes/dashboardRoutes"));
-
+app.use("/api/chat", require("./routes/chatRoutes"));
 // Error middleware (must be last)
 app.use(notFound);
 app.use(errorHandler);

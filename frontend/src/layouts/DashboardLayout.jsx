@@ -15,6 +15,7 @@ import {
   FiChevronRight,
 } from "react-icons/fi";
 import ThemeToggle from "../components/common/ThemeToggle.jsx";
+import FloatingChatbot from "../components/common/FloatingChatbot.jsx";
 
 /* ── Icon map for each route ── */
 const ICON_MAP = {
@@ -237,6 +238,8 @@ export default function DashboardLayout({ links = [], title = "Dashboard" }) {
           </div>
         </main>
       </div>
+
+      <FloatingChatbot />
     </div>
   );
 }
