@@ -1,7 +1,6 @@
 import { useEffect, useState } from "react";
 import { Link } from "react-router-dom";
 
-import ChatWidget from "../../components/chat/ChatWidget.jsx";
 import { getDashboardSummaryApi } from "../../api/dashboardApi.js";
 import { reviewReportApi } from "../../api/reportApi.js";
 
@@ -490,9 +489,6 @@ export default function ManagerDashboard() {
                 </tbody>
               </table>
             </div>
-
-            {/* Manager AI widget */}
-            <ChatWidget />
           </Card>
         </>
       )}

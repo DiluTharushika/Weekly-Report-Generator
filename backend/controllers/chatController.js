@@ -58,22 +58,22 @@ const chatWithReports = async (req, res, next) => {
       return res.json({ message: "message is required" });
     }
 
-    // Default: last 7 days
-    let from = new Date();
-    from.setDate(from.getDate() - 7);
-    let to = new Date();
+    let query = {};
+    let dateRange = null;
 
-    // If weekStart provided, use that week
-    if (weekStart) {
-      from = new Date(weekStart);
-      to = new Date(from);
+    // If specific week provided and not 'all', filter to that week
+    if (weekStart && weekStart !== "all") {
+      const from = new Date(weekStart);
+      const to = new Date(from);
       to.setDate(to.getDate() + 6);
       to.setHours(23, 59, 59, 999);
+      query.weekStart = { $gte: from, $lte: to };
+      dateRange = { from, to };
     }
 
-    const reports = await Report.find({
-      weekStart: { $gte: from, $lte: to },
-    })
+    const reports = await Report.find(query)
+      .sort({ weekStart: -1, createdAt: -1 })
+      .limit(30)
       .populate("user", "name email")
       .populate("project", "name")
       .lean();

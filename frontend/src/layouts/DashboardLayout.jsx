@@ -15,7 +15,8 @@ import {
   FiChevronRight,
 } from "react-icons/fi";
 import ThemeToggle from "../components/common/ThemeToggle.jsx";
-import FloatingChatbot from "../components/common/FloatingChatbot.jsx";
+import ChatWidget from "../components/chat/ChatWidget.jsx";
+import { ROLES } from "../utils/constants.js";
 
 /* ── Icon map for each route ── */
 const ICON_MAP = {
@@ -63,6 +64,8 @@ const NavItem = ({ to, label, icon: Icon }) => (
 export default function DashboardLayout({ links = [], title = "Dashboard" }) {
   const dispatch = useDispatch();
   const { user } = useSelector((s) => s.auth);
+
+  const isManagerOrAdmin = user?.role === ROLES.MANAGER || user?.role === ROLES.ADMIN;
 
   /* Build enriched nav items from links prop */
   const enrichedLinks = links.map((l) => ({
@@ -238,8 +241,8 @@ export default function DashboardLayout({ links = [], title = "Dashboard" }) {
           </div>
         </main>
       </div>
-
-      <FloatingChatbot />
+      {/* ── Floating AI Chatbot for Managers & Admins ── */}
+      {isManagerOrAdmin && <ChatWidget />}
     </div>
   );
 }
