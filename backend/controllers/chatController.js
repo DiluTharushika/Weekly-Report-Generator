@@ -1,7 +1,7 @@
-const OpenAI = require("openai");
+const { GoogleGenerativeAI } = require("@google/generative-ai");
 const Report = require("../models/Report");
 
-const openai = new OpenAI({ apiKey: process.env.OPENAI_API_KEY });
+const genAI = new GoogleGenerativeAI(process.env.GEMINI_API_KEY || "");
 
 const toYMD = (d) => new Date(d).toISOString().slice(0, 10);
 
@@ -97,21 +97,18 @@ REPORT CONTEXT:
 ${context || "(No reports found for the selected date range.)"}
 `;
 
-    const completion = await openai.chat.completions.create({
-      model: "gpt-4o-mini",
-      messages: [
-        { role: "system", content: systemPrompt.trim() },
-        { role: "user", content: userPrompt.trim() },
-      ],
-      temperature: 0.2,
+    const model = genAI.getGenerativeModel({
+      model: "gemini-3.6-flash",
+      systemInstruction: systemPrompt.trim(),
     });
 
-    const answer = completion.choices?.[0]?.message?.content || "No response";
+    const result = await model.generateContent(userPrompt.trim());
+    const answer = result.response.text() || "No response received.";
 
     res.json({
       answer,
       usedReports: reports.length,
-      dateRange: { from, to },
+      dateRange,
     });
   } catch (err) {
     next(err);
