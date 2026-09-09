@@ -32,13 +32,21 @@ const CustomTooltip = ({ active, payload, label }) => {
 };
 
 export default function StatusByMemberChart({ statusByMember }) {
-  const data = Object.entries(statusByMember || {}).map(([name, s]) => ({
-    name,
-    Draft: s["Draft"] || 0,
-    Submitted: s["Submitted"] || 0,
-    "Needs Correction": s["Needs Correction"] || 0,
-    Approved: s["Approved"] || 0,
-  }));
+  const data = Array.isArray(statusByMember)
+    ? statusByMember.map((s) => ({
+        name: s.name || "Unknown",
+        Draft: s.Draft || 0,
+        Submitted: s.Submitted || 0,
+        "Needs Correction": s["Needs Correction"] || 0,
+        Approved: s.Approved || 0,
+      }))
+    : Object.entries(statusByMember || {}).map(([name, s]) => ({
+        name,
+        Draft: s?.Draft || 0,
+        Submitted: s?.Submitted || 0,
+        "Needs Correction": s?.["Needs Correction"] || 0,
+        Approved: s?.Approved || 0,
+      }));
 
   if (!data.length) {
     return (

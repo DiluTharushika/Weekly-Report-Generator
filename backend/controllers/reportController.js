@@ -385,11 +385,26 @@ const submitReport = async (req, res, next) => {
 const reviewReport = async (req, res, next) => {
   try {
     const { id } = req.params;
-    const { status, managerComment = "" } = req.body;
+    let { status, managerComment = "", action, comment } = req.body;
+
+    // Normalize from action / comment if passed
+    if (!status && action) {
+      if (action.toUpperCase() === "APPROVE" || action === REPORT_STATUS.APPROVED) {
+        status = REPORT_STATUS.APPROVED;
+      } else if (
+        action.toUpperCase() === "REQUEST_CHANGES" ||
+        action === REPORT_STATUS.NEEDS_CORRECTION
+      ) {
+        status = REPORT_STATUS.NEEDS_CORRECTION;
+      }
+    }
+    if (!managerComment && comment) {
+      managerComment = comment;
+    }
 
     if (![REPORT_STATUS.APPROVED, REPORT_STATUS.NEEDS_CORRECTION].includes(status)) {
       res.status(400);
-      return res.json({ message: "Invalid review status" });
+      return res.json({ message: "Invalid review status. Must be 'Approved' or 'Needs Correction'" });
     }
 
     const report = await Report.findById(id);

@@ -16,11 +16,11 @@ const getDashboardSummary = async (req, res, next) => {
 
     let filter = {};
 
-    if (weekStart) {
+    if (weekStart && weekStart !== "all") {
       const start = new Date(weekStart);
       start.setHours(0, 0, 0, 0);
       const end = new Date(start);
-      end.setDate(end.getDate() + 1);
+      end.setDate(end.getDate() + 7);
       filter = { weekStart: { $gte: start, $lt: end } };
     }
 
@@ -33,6 +33,7 @@ const getDashboardSummary = async (req, res, next) => {
       totalMembers,
       statusByMemberRaw,
       recentReportsRaw,
+      allWeekStarts,
     ] = await Promise.all([
       Report.countDocuments(filter),
       Report.countDocuments({ ...filter, status: REPORT_STATUS.SUBMITTED }),
@@ -42,17 +43,25 @@ const getDashboardSummary = async (req, res, next) => {
       User.countDocuments({ role: ROLES.MEMBER }),
       Report.find(filter).populate("user", "name").lean(),
       Report.find(filter)
-        .sort({ updatedAt: -1 })
+        .sort({ updatedAt: -1, createdAt: -1 })
         .limit(10)
         .populate("user", "name")
-        .populate("project", "name")
+        .populate("project", "name color")
         .lean(),
+      Report.distinct("weekStart"),
     ]);
 
+    const availableWeeks = allWeekStarts
+      .filter(Boolean)
+      .map((d) => new Date(d).toISOString().slice(0, 10))
+      .filter((v, i, a) => a.indexOf(v) === i)
+      .sort((a, b) => b.localeCompare(a));
+
     const compliedCount = submittedCount + needsCorrectionCount + approvedCount;
+    const baseCount = weekStart && weekStart !== "all" ? Math.max(1, totalMembers) : Math.max(1, totalReports);
     const complianceRate =
-      totalMembers > 0
-        ? Math.min(100, Math.round((compliedCount / Math.max(1, totalMembers)) * 100))
+      totalReports > 0
+        ? Math.min(100, Math.round((compliedCount / baseCount) * 100))
         : 0;
 
     // Open blockers count & hours breakdown aggregation across reports
@@ -111,7 +120,10 @@ const getDashboardSummary = async (req, res, next) => {
       id: r._id,
       memberName: r.user?.name || "Unknown",
       projectName: r.project?.name || "-",
+      projectColor: r.project?.color || "#3B82F6",
       status: r.status,
+      weekStart: r.weekStart,
+      weekEnd: r.weekEnd,
       updatedAt: r.updatedAt,
     }));
 
@@ -128,6 +140,7 @@ const getDashboardSummary = async (req, res, next) => {
       totalTasksCompletedCount,
       statusByMember,
       recentReports,
+      availableWeeks,
     });
   } catch (err) {
     next(err);

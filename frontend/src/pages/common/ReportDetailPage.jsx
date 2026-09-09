@@ -18,9 +18,12 @@ import {
   FiLayers,
   FiTrendingUp,
   FiStar,
+  FiCheck,
+  FiXCircle,
+  FiMessageSquare,
 } from "react-icons/fi";
 
-import { getReportByIdApi, getReportVersionsApi } from "../../api/reportApi.js";
+import { getReportByIdApi, getReportVersionsApi, reviewReportApi } from "../../api/reportApi.js";
 import StatusBadge from "../../components/report/StatusBadge.jsx";
 import ManagerCommentBox from "../../components/report/ManagerCommentBox.jsx";
 
@@ -93,6 +96,12 @@ export default function ReportDetailPage() {
   const [openVersion, setOpenVersion] = useState(null);
 
   const isMember = user?.role === "member";
+  const isManagerOrAdmin = user?.role === "manager" || user?.role === "admin";
+
+  const [reviewActionLoading, setReviewActionLoading] = useState(false);
+  const [reviewComment, setReviewComment] = useState("");
+  const [reviewSuccessMsg, setReviewSuccessMsg] = useState("");
+  const [reviewErrorMsg, setReviewErrorMsg] = useState("");
 
   const load = async () => {
     setLoading(true);
@@ -100,10 +109,44 @@ export default function ReportDetailPage() {
     try {
       const data = await getReportByIdApi(id);
       setReport(data.report);
+      if (data.report?.managerComment) {
+        setReviewComment(data.report.managerComment);
+      }
     } catch (err) {
       setError(err?.response?.data?.message || err.message || "Failed to load report");
     } finally {
       setLoading(false);
+    }
+  };
+
+  const handleReviewAction = async (targetStatus) => {
+    if (targetStatus === "Needs Correction" && !reviewComment.trim()) {
+      setReviewErrorMsg("Please provide feedback notes explaining what changes are needed.");
+      return;
+    }
+
+    setReviewActionLoading(true);
+    setReviewErrorMsg("");
+    setReviewSuccessMsg("");
+
+    try {
+      const res = await reviewReportApi(id, {
+        status: targetStatus,
+        managerComment: reviewComment.trim() || (targetStatus === "Approved" ? "Approved" : ""),
+      });
+      setReport(res.report);
+      setReviewSuccessMsg(
+        targetStatus === "Approved"
+          ? "Report has been approved successfully!"
+          : "Correction request has been submitted to the team member."
+      );
+      loadVersions();
+    } catch (err) {
+      setReviewErrorMsg(
+        err?.response?.data?.message || err.message || "Failed to update review status"
+      );
+    } finally {
+      setReviewActionLoading(false);
     }
   };
 
@@ -551,6 +594,87 @@ export default function ReportDetailPage() {
             </div>
           )}
         </Section>
+
+        {/* Manager / Admin Appraisal & Review Actions below the report */}
+        {isManagerOrAdmin && (
+          <div className="rounded-2xl border-2 border-indigo-200 dark:border-indigo-500/30 bg-white dark:bg-slate-900 shadow-md p-6 space-y-4">
+            <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-2 pb-3 border-b border-slate-100 dark:border-slate-800">
+              <div className="flex items-center gap-2">
+                <div className="p-2 rounded-xl bg-indigo-100 dark:bg-indigo-500/20 text-indigo-700 dark:text-indigo-400">
+                  <FiMessageSquare className="text-lg" />
+                </div>
+                <div>
+                  <h2 className="text-base font-bold text-slate-900 dark:text-slate-100 tracking-tight">
+                    Manager Review & Decision Actions
+                  </h2>
+                  <p className="text-xs text-slate-500 dark:text-slate-400">
+                    Submit appraisal decision or request changes with revision instructions
+                  </p>
+                </div>
+              </div>
+
+              <div className="flex items-center gap-2">
+                <span className="text-xs text-slate-500 dark:text-slate-400 font-medium">Current status:</span>
+                <StatusBadge status={report.status} />
+              </div>
+            </div>
+
+            {reviewSuccessMsg && (
+              <div className="rounded-xl border border-emerald-300 dark:border-emerald-500/30 bg-emerald-50 dark:bg-emerald-500/10 p-3.5 text-xs text-emerald-800 dark:text-emerald-300 font-medium flex items-center gap-2">
+                <FiCheck className="text-emerald-600 text-base shrink-0" />
+                <span>{reviewSuccessMsg}</span>
+              </div>
+            )}
+
+            {reviewErrorMsg && (
+              <div className="rounded-xl border border-red-300 dark:border-red-500/30 bg-red-50 dark:bg-red-500/10 p-3.5 text-xs text-red-700 dark:text-red-400 font-medium flex items-center gap-2">
+                <FiAlertTriangle className="text-red-600 text-base shrink-0" />
+                <span>{reviewErrorMsg}</span>
+              </div>
+            )}
+
+            <div>
+              <label className="block text-xs font-bold text-slate-700 dark:text-slate-300 uppercase tracking-wider mb-1.5">
+                Manager Feedback / Revision Guidance
+              </label>
+              <textarea
+                rows={3}
+                className="w-full rounded-xl border border-slate-200 dark:border-slate-700 bg-slate-50/70 dark:bg-slate-800/60 p-3 text-xs text-slate-900 dark:text-slate-100 placeholder-slate-400 dark:placeholder-slate-500 focus:bg-white dark:focus:bg-slate-900 focus:border-indigo-500 focus:ring-2 focus:ring-indigo-500/20 outline-none transition-all resize-none"
+                value={reviewComment}
+                onChange={(e) => setReviewComment(e.target.value)}
+                placeholder="Write feedback notes, appraisal observations, or specific changes required..."
+              />
+            </div>
+
+            <div className="flex flex-wrap items-center gap-3 pt-1">
+              <button
+                type="button"
+                disabled={reviewActionLoading}
+                onClick={() => handleReviewAction("Approved")}
+                className="inline-flex items-center gap-2 px-5 py-2.5 rounded-xl bg-emerald-600 hover:bg-emerald-500 text-white text-xs font-bold shadow-md shadow-emerald-600/20 transition-all cursor-pointer disabled:opacity-50"
+              >
+                <FiCheck className="text-base" />
+                {reviewActionLoading ? "Processing..." : "Approve Report"}
+              </button>
+
+              <button
+                type="button"
+                disabled={reviewActionLoading}
+                onClick={() => handleReviewAction("Needs Correction")}
+                className="inline-flex items-center gap-2 px-5 py-2.5 rounded-xl bg-amber-500 hover:bg-amber-400 text-white text-xs font-bold shadow-md shadow-amber-500/20 transition-all cursor-pointer disabled:opacity-50"
+              >
+                <FiXCircle className="text-base" />
+                {reviewActionLoading ? "Processing..." : "Want to Change (Request Changes)"}
+              </button>
+
+              {report.status === "Approved" && (
+                <span className="text-xs text-emerald-600 dark:text-emerald-400 font-semibold ml-auto flex items-center gap-1">
+                  <FiCheck /> This report is approved
+                </span>
+              )}
+            </div>
+          </div>
+        )}
       </div>
     </div>
   );

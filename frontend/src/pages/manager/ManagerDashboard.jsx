@@ -1,4 +1,4 @@
-import { useEffect, useMemo, useState } from "react";
+import { useEffect, useState } from "react";
 import { Link } from "react-router-dom";
 
 import ChatWidget from "../../components/chat/ChatWidget.jsx";
@@ -7,7 +7,6 @@ import { reviewReportApi } from "../../api/reportApi.js";
 
 import StatusByMemberChart from "../../components/dashboard/StatusByMemberChart.jsx";
 import StatusPieChart from "../../components/dashboard/StatusPieChart.jsx";
-import HoursBreakdownChart from "../../components/dashboard/HoursBreakdownChart.jsx";
 
 import {
   FiFileText,
@@ -20,19 +19,18 @@ import {
   FiMessageSquare,
   FiCheck,
   FiXCircle,
+  FiCalendar,
+  FiLayers,
 } from "react-icons/fi";
 
 /* ─── helpers ─── */
 const ymd = (d) => new Date(d).toISOString().slice(0, 10);
 
-const getThisWeekStart = () => {
-  const now = new Date();
-  const day = now.getDay();
-  const diff = (day === 0 ? -6 : 1) - day; // Monday
-  const monday = new Date(now);
-  monday.setDate(now.getDate() + diff);
-  monday.setHours(0, 0, 0, 0);
-  return monday;
+const formatWeek = (weekStart, weekEnd) => {
+  if (!weekStart) return "-";
+  const s = new Date(weekStart).toISOString().slice(0, 10);
+  const e = weekEnd ? new Date(weekEnd).toISOString().slice(0, 10) : "";
+  return e ? `${s} → ${e}` : s;
 };
 
 /* ─── Local StatusBadge ─── */
@@ -96,8 +94,7 @@ const Card = ({ children, className = "" }) => (
 );
 
 export default function ManagerDashboard() {
-  const weekStart = useMemo(() => ymd(getThisWeekStart()), []);
-
+  const [selectedWeek, setSelectedWeek] = useState("all");
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState("");
 
@@ -109,12 +106,12 @@ export default function ManagerDashboard() {
   const [reviewing, setReviewing] = useState(false);
   const [reviewError, setReviewError] = useState("");
 
-  const load = async () => {
+  const load = async (weekToLoad = selectedWeek) => {
     setLoading(true);
     setError("");
     try {
-      // ✅ backend requires weekStart
-      const data = await getDashboardSummaryApi({ weekStart });
+      const params = weekToLoad && weekToLoad !== "all" ? { weekStart: weekToLoad } : {};
+      const data = await getDashboardSummaryApi(params);
       setSummary(data);
     } catch (err) {
       setError(err?.response?.data?.message || err.message || "Failed to load dashboard");
@@ -124,9 +121,13 @@ export default function ManagerDashboard() {
   };
 
   useEffect(() => {
-    load();
-    // eslint-disable-next-line react-hooks/exhaustive-deps
+    load("all");
   }, []);
+
+  const handleWeekChange = (newWeek) => {
+    setSelectedWeek(newWeek);
+    load(newWeek);
+  };
 
   // ✅ Correct review payload for backend
   const handleReview = async (reportId, action) => {
@@ -134,7 +135,10 @@ export default function ManagerDashboard() {
     setReviewError("");
     try {
       if (action === "APPROVE") {
-        await reviewReportApi(reportId, { action: "APPROVE" });
+        await reviewReportApi(reportId, {
+          status: "Approved",
+          managerComment: reviewComment.trim() || "Approved",
+        });
       } else {
         if (!reviewComment.trim()) {
           setReviewError("Comment is required when requesting changes.");
@@ -142,14 +146,14 @@ export default function ManagerDashboard() {
           return;
         }
         await reviewReportApi(reportId, {
-          action: "REQUEST_CHANGES",
-          comment: reviewComment.trim(),
+          status: "Needs Correction",
+          managerComment: reviewComment.trim(),
         });
       }
 
       setSelectedReportId(null);
       setReviewComment("");
-      await load();
+      await load(selectedWeek);
     } catch (err) {
       setReviewError(err?.response?.data?.message || err.message || "Failed to submit review");
     } finally {
@@ -178,24 +182,49 @@ export default function ManagerDashboard() {
         <div className="absolute -top-16 -right-16 h-72 w-72 rounded-full bg-white/10 dark:bg-blue-600/15 blur-3xl" />
         <div className="absolute -bottom-10 -left-10 h-48 w-48 rounded-full bg-indigo-300/20 dark:bg-blue-500/10 blur-3xl" />
 
-        <div className="relative z-10 flex flex-col sm:flex-row sm:items-center justify-between gap-4">
-          <div>
-            <div className="inline-flex items-center gap-2 px-3 py-1.5 rounded-full text-xs font-semibold mb-3
+        <div className="relative z-10 flex flex-col md:flex-row md:items-center justify-between gap-6">
+          <div className="space-y-2">
+            <div className="inline-flex items-center gap-2 px-3 py-1.5 rounded-full text-xs font-semibold
               bg-white/15 dark:bg-blue-500/15
               text-white dark:text-blue-300
               border border-white/20 dark:border-blue-500/25">
-              <FiClock className="text-yellow-300 dark:text-blue-400" /> Weekly Overview
+              <FiClock className="text-yellow-300 dark:text-blue-400" />
+              {selectedWeek === "all" ? "All Time Overview" : `Cycle: Week of ${selectedWeek}`}
             </div>
             <h1 className="text-2xl sm:text-3xl font-extrabold tracking-tight">
               Executive Review & Analytics Hub
             </h1>
-            <p className="text-blue-100 dark:text-slate-400 text-xs sm:text-sm mt-1 max-w-xl">
-              Week starting <b>{weekStart}</b> — monitor submissions, blockers and approvals.
+            <p className="text-blue-100 dark:text-slate-400 text-xs sm:text-sm max-w-xl">
+              {selectedWeek === "all"
+                ? "Aggregated metrics across all submitted weekly reports, blockers, and approvals."
+                : `Week starting ${selectedWeek} — monitor submissions, blockers, and approvals.`}
             </p>
+
+            {/* Week Filter Selector */}
+            <div className="pt-2 flex items-center gap-2">
+              <span className="text-xs font-semibold text-blue-200 dark:text-slate-300 flex items-center gap-1.5">
+                <FiCalendar className="text-yellow-300 dark:text-blue-400" /> Cycle:
+              </span>
+              <select
+                value={selectedWeek}
+                onChange={(e) => handleWeekChange(e.target.value)}
+                className="rounded-xl px-3 py-1.5 text-xs font-semibold outline-none cursor-pointer transition-all
+                  bg-white/20 dark:bg-slate-900/90 text-white dark:text-slate-100
+                  border border-white/30 dark:border-slate-700
+                  backdrop-blur-md shadow-sm"
+              >
+                <option value="all" className="bg-slate-900 text-white">All Time (All Reports)</option>
+                {(summary?.availableWeeks || []).map((w) => (
+                  <option key={w} value={w} className="bg-slate-900 text-white">
+                    Week of {w}
+                  </option>
+                ))}
+              </select>
+            </div>
           </div>
 
-          <div className="shrink-0">
-            <div className="px-5 py-4 rounded-2xl text-center
+          <div className="shrink-0 flex items-center gap-3">
+            <div className="px-5 py-4 rounded-2xl text-center min-w-[140px]
               bg-white/15 dark:bg-blue-500/10
               border border-white/20 dark:border-blue-500/25">
               <div className="text-xs text-blue-100 dark:text-slate-400 font-medium">
@@ -224,7 +253,7 @@ export default function ManagerDashboard() {
             <MetricCard
               label="Total Reports"
               value={summary.totalReports || 0}
-              sub="Reports found for selected week"
+              sub={selectedWeek === "all" ? "Total reports recorded" : "Reports found for selected week"}
               iconBg="bg-blue-100 dark:bg-blue-500/15"
               iconColor="text-blue-600 dark:text-blue-400"
               icon={FiFileText}
@@ -294,23 +323,6 @@ export default function ManagerDashboard() {
             </Card>
           </div>
 
-          {/* Hours Breakdown (safe) */}
-          <Card className="p-5">
-            <div className="flex items-center justify-between pb-4 border-b border-slate-200 dark:border-slate-800/80">
-              <div>
-                <h3 className="text-base font-bold text-slate-900 dark:text-slate-100 tracking-tight flex items-center gap-2">
-                  <FiClock className="text-blue-600 dark:text-blue-400" /> Workload & Time Spent by Task Type
-                </h3>
-                <p className="text-xs text-slate-400 dark:text-slate-500 mt-0.5">
-                  Total hours across Development, Testing, Meetings, Documentation, Other
-                </p>
-              </div>
-            </div>
-            <div className="mt-4">
-              <HoursBreakdownChart hoursBreakdown={summary.hoursBreakdown || {}} />
-            </div>
-          </Card>
-
           {/* Recent submissions */}
           <Card className="overflow-hidden">
             <div className="p-5 border-b border-slate-200 dark:border-slate-800/80 flex items-center justify-between">
@@ -334,11 +346,11 @@ export default function ManagerDashboard() {
               <table className="w-full text-xs">
                 <thead className="border-b border-slate-200 dark:border-slate-800/80 bg-slate-50 dark:bg-slate-950/60 text-slate-500 dark:text-slate-400">
                   <tr>
-                    {["Team Member", "Project", "Status", "Last Updated", "Review"].map((h, i) => (
+                    {["Team Member", "Project", "Cycle", "Status", "Last Updated", "Actions"].map((h, i) => (
                       <th
                         key={h}
                         className={`font-semibold px-5 py-3.5 uppercase tracking-wider ${
-                          i === 4 ? "text-right" : "text-left"
+                          i === 5 ? "text-right" : "text-left"
                         }`}
                       >
                         {h}
@@ -353,8 +365,17 @@ export default function ManagerDashboard() {
                       <td className="px-5 py-3.5 font-bold text-slate-900 dark:text-slate-100">
                         {r.memberName}
                       </td>
+                      <td className="px-5 py-3.5 font-medium">
+                        <span className="inline-flex items-center gap-1.5 text-slate-600 dark:text-slate-300">
+                          <span
+                            className="h-2 w-2 rounded-full shrink-0"
+                            style={{ backgroundColor: r.projectColor || "#3B82F6" }}
+                          />
+                          {r.projectName}
+                        </span>
+                      </td>
                       <td className="px-5 py-3.5 text-slate-500 dark:text-slate-400 font-medium">
-                        {r.projectName}
+                        {formatWeek(r.weekStart, r.weekEnd)}
                       </td>
                       <td className="px-5 py-3.5">
                         <StatusBadge status={r.status} />
@@ -427,7 +448,7 @@ export default function ManagerDashboard() {
                                 disabled={reviewing}
                                 onClick={() => handleReview(r.id, "APPROVE")}
                                 className="inline-flex items-center gap-1.5 rounded-lg px-3 py-1.5 text-xs font-bold text-white disabled:opacity-50 transition-all shadow-sm
-                                  bg-emerald-600 hover:bg-emerald-500 shadow-emerald-600/20"
+                                  bg-emerald-600 hover:bg-emerald-500 shadow-emerald-600/20 cursor-pointer"
                               >
                                 <FiCheck /> Approve
                               </button>
@@ -436,9 +457,9 @@ export default function ManagerDashboard() {
                                 disabled={reviewing}
                                 onClick={() => handleReview(r.id, "REQUEST_CHANGES")}
                                 className="inline-flex items-center gap-1.5 rounded-lg px-3 py-1.5 text-xs font-bold text-white disabled:opacity-50 transition-all shadow-sm
-                                  bg-amber-500 hover:bg-amber-400 shadow-amber-500/20"
+                                  bg-amber-500 hover:bg-amber-400 shadow-amber-500/20 cursor-pointer"
                               >
-                                <FiXCircle /> Request Changes
+                                <FiXCircle /> Want to Change
                               </button>
 
                               <button
@@ -447,7 +468,7 @@ export default function ManagerDashboard() {
                                   setReviewComment("");
                                   setReviewError("");
                                 }}
-                                className="text-xs text-slate-400 dark:text-slate-500 hover:underline ml-auto"
+                                className="text-xs text-slate-400 dark:text-slate-500 hover:underline ml-auto cursor-pointer"
                                 type="button"
                               >
                                 Cancel
@@ -461,7 +482,7 @@ export default function ManagerDashboard() {
 
                   {(summary.recentReports || []).length === 0 && (
                     <tr>
-                      <td className="px-5 py-12 text-center text-slate-400 dark:text-slate-500" colSpan={5}>
+                      <td className="px-5 py-12 text-center text-slate-400 dark:text-slate-500" colSpan={6}>
                         No activity found.
                       </td>
                     </tr>
