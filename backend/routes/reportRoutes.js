@@ -9,6 +9,8 @@ const {
   updateReport,
   submitReport,
   reviewReport,
+  getReportVersions,
+  restoreReportVersion,
 } = require("../controllers/reportController");
 
 const { protect } = require("../middleware/authMiddleware");
@@ -35,6 +37,12 @@ router.get("/my", protect, getMyReports);
 
 // Manager / Admin list ALL team reports (must come BEFORE "/:id" below)
 router.get("/", protect, allowRoles(ROLES.MANAGER, ROLES.ADMIN), getAllReports);
+
+// Get report versions
+router.get("/:id/versions", protect, getReportVersions);
+
+// Restore a report version
+router.put("/:id/versions/:versionNumber/restore", protect, restoreReportVersion);
 
 // View report detail (member own, manager any) - RBAC inside controller
 router.get("/:id", protect, getReportById);

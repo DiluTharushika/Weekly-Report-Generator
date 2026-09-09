@@ -21,6 +21,9 @@ export const reviewReportApi = (id, payload) =>
 export const getReportVersionsApi = (id) =>
   axiosInstance.get(`/api/reports/${id}/versions`).then((res) => res.data);
 
+export const restoreReportVersionApi = (id, versionNumber) =>
+  axiosInstance.put(`/api/reports/${id}/versions/${versionNumber}/restore`).then((res) => res.data);
+
 export const getSummaryApi = (params = {}) =>
   axiosInstance.get("/api/dashboard/summary", { params }).then((res) => res.data);
 

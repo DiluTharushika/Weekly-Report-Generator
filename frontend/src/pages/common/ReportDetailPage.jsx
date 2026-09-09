@@ -23,9 +23,15 @@ import {
   FiMessageSquare,
 } from "react-icons/fi";
 
-import { getReportByIdApi, getReportVersionsApi, reviewReportApi } from "../../api/reportApi.js";
+import {
+  getReportByIdApi,
+  getReportVersionsApi,
+  reviewReportApi,
+  restoreReportVersionApi,
+} from "../../api/reportApi.js";
 import StatusBadge from "../../components/report/StatusBadge.jsx";
 import ManagerCommentBox from "../../components/report/ManagerCommentBox.jsx";
+import VersionSnapshotViewer from "../../components/report/VersionSnapshotViewer.jsx";
 
 const ymd = (d) => new Date(d).toISOString().slice(0, 10);
 const formatWeek = (weekStart, weekEnd) => `${ymd(weekStart)} → ${ymd(weekEnd)}`;
@@ -150,6 +156,34 @@ export default function ReportDetailPage() {
     }
   };
 
+  const [restoringVersion, setRestoringVersion] = useState(false);
+  const [versionActionMsg, setVersionActionMsg] = useState("");
+
+  const handleRestoreVersion = async (vNumber) => {
+    if (
+      !window.confirm(
+        `Are you sure you want to restore the report content back to Version #${vNumber}?`
+      )
+    ) {
+      return;
+    }
+
+    setRestoringVersion(true);
+    setVersionActionMsg("");
+    try {
+      const res = await restoreReportVersionApi(id, vNumber);
+      setReport(res.report);
+      setVersionActionMsg(`Successfully restored report to Version #${vNumber}!`);
+      await loadVersions();
+    } catch (err) {
+      setVersionActionMsg(
+        err?.response?.data?.message || err.message || "Failed to restore version"
+      );
+    } finally {
+      setRestoringVersion(false);
+    }
+  };
+
   const loadVersions = async () => {
     setLoadingVersions(true);
     try {
@@ -241,6 +275,9 @@ export default function ReportDetailPage() {
                   Weekly Report
                 </h1>
                 <StatusBadge status={report.status} />
+                <span className="px-2.5 py-1 rounded-full text-xs font-bold bg-white/15 text-white border border-white/20">
+                  v{report.currentVersion || 1}
+                </span>
               </div>
 
               <div className="mt-3 flex flex-wrap items-center gap-x-5 gap-y-2 text-sm text-slate-300">
@@ -531,7 +568,7 @@ export default function ReportDetailPage() {
 
         {/* Version history */}
         <Section
-          title="Version History"
+          title="Version History & Snapshots"
           icon={<FiLayers />}
           right={
             !loadingVersions && (
@@ -541,51 +578,79 @@ export default function ReportDetailPage() {
             )
           }
         >
+          {versionActionMsg && (
+            <div className="mb-3 rounded-xl border border-indigo-200 dark:border-indigo-500/30 bg-indigo-50 dark:bg-indigo-500/10 p-3 text-xs font-semibold text-indigo-800 dark:text-indigo-300">
+              {versionActionMsg}
+            </div>
+          )}
+
           {loadingVersions ? (
-            <div className="text-sm text-slate-500">Loading versions...</div>
+            <div className="text-sm text-slate-500 py-4 text-center">Loading versions...</div>
           ) : versions.length === 0 ? (
-            <EmptyState text="No versions found." />
+            <EmptyState text="No historical versions recorded." />
           ) : (
-            <div className="space-y-2.5">
+            <div className="space-y-3">
               {versions.map((v) => {
                 const isOpen = openVersion === v._id;
+                const isCurrent = Number(v.versionNumber) === Number(report.currentVersion);
                 return (
                   <div
                     key={v._id}
-                    className="rounded-xl border border-slate-200 overflow-hidden"
+                    className={`rounded-xl border transition-all ${
+                      isCurrent
+                        ? "border-emerald-300 dark:border-emerald-500/40 bg-emerald-50/20 dark:bg-emerald-500/5"
+                        : "border-slate-200 dark:border-slate-800 bg-white dark:bg-slate-900"
+                    } overflow-hidden`}
                   >
                     <button
                       type="button"
-                      className="w-full text-left px-4 py-3.5 flex items-center justify-between hover:bg-slate-50 transition-colors"
+                      className="w-full text-left px-4 py-3.5 flex items-center justify-between hover:bg-slate-50 dark:hover:bg-slate-800/50 transition-colors cursor-pointer"
                       onClick={() => setOpenVersion(isOpen ? null : v._id)}
                     >
                       <div className="flex items-center gap-3">
-                        <span className="flex h-7 w-7 items-center justify-center rounded-full bg-indigo-50 text-indigo-600 text-xs font-bold">
+                        <span
+                          className={`flex h-7 w-7 items-center justify-center rounded-full text-xs font-bold ${
+                            isCurrent
+                              ? "bg-emerald-100 text-emerald-700 dark:bg-emerald-500/20 dark:text-emerald-400"
+                              : "bg-indigo-50 text-indigo-600 dark:bg-indigo-500/20 dark:text-indigo-400"
+                          }`}
+                        >
                           v{v.versionNumber}
                         </span>
-                        <div className="text-sm">
-                          <div className="font-semibold text-slate-900">
-                            Version {v.versionNumber}
+                        <div>
+                          <div className="font-semibold text-slate-900 dark:text-slate-100 flex items-center gap-2">
+                            <span>Version {v.versionNumber}</span>
+                            {isCurrent && (
+                              <span className="px-2 py-0.5 rounded-full text-[10px] font-bold bg-emerald-100 text-emerald-700 dark:bg-emerald-500/20 dark:text-emerald-400">
+                                Current Active
+                              </span>
+                            )}
                           </div>
-                          <div className="text-xs text-slate-500 inline-flex items-center gap-1 mt-0.5">
+                          <div className="text-xs text-slate-500 dark:text-slate-400 inline-flex items-center gap-1 mt-0.5">
                             <FiClock className="text-slate-400" />
-                            {new Date(v.submittedAt).toLocaleString()}
+                            {v.submittedAt ? new Date(v.submittedAt).toLocaleString() : "Initial Draft"}
                           </div>
                         </div>
                       </div>
-                      <span className="text-slate-400">
-                        {isOpen ? <FiChevronUp /> : <FiChevronDown />}
+                      <span className="text-indigo-600 dark:text-indigo-400 font-semibold text-xs">
+                        {isOpen ? "Collapse Snapshot" : "Inspect Snapshot"}
                       </span>
                     </button>
 
                     {isOpen && (
-                      <div className="px-4 pb-4">
-                        <div className="mt-1 mb-2 text-xs font-medium text-slate-400 uppercase tracking-wider">
-                          Snapshot
-                        </div>
-                        <pre className="overflow-x-auto rounded-xl bg-slate-950 text-slate-100 p-3.5 text-xs leading-relaxed">
-                          {JSON.stringify(v.snapshot, null, 2)}
-                        </pre>
+                      <div className="px-4 pb-4 border-t border-slate-100 dark:border-slate-800">
+                        <VersionSnapshotViewer
+                          snapshot={v.snapshot || {}}
+                          versionNumber={v.versionNumber}
+                          isCurrent={isCurrent}
+                          canRestore={
+                            isMember
+                              ? ["Draft", "Needs Correction"].includes(report.status)
+                              : isManagerOrAdmin
+                          }
+                          onRestore={handleRestoreVersion}
+                          restoring={restoringVersion}
+                        />
                       </div>
                     )}
                   </div>

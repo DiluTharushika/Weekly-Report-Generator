@@ -432,6 +432,128 @@ const reviewReport = async (req, res, next) => {
   }
 };
 
+/**
+ * GET /api/reports/:id/versions
+ * Member: can view own report versions
+ * Manager/Admin: can view any report versions
+ */
+const getReportVersions = async (req, res, next) => {
+  try {
+    const { id } = req.params;
+
+    if (!mongoose.isValidObjectId(id)) {
+      res.status(400);
+      return res.json({ message: "Invalid report id" });
+    }
+
+    const report = await Report.findById(id).lean();
+    if (!report) {
+      res.status(404);
+      return res.json({ message: "Report not found" });
+    }
+
+    // RBAC: If member, must own the report
+    if (req.user.role === "member" && String(report.user) !== String(req.user.id)) {
+      res.status(403);
+      return res.json({ message: "Forbidden" });
+    }
+
+    let versions = await ReportVersion.find({ report: id })
+      .sort({ versionNumber: -1 })
+      .lean();
+
+    // If no explicit snapshots exist yet, provide baseline version from current report
+    if (versions.length === 0) {
+      versions = [
+        {
+          _id: report._id.toString() + "_v1",
+          report: report._id,
+          versionNumber: report.currentVersion || 1,
+          snapshot: {
+            project: report.project,
+            weekStart: report.weekStart,
+            weekEnd: report.weekEnd,
+            categoryTag: report.categoryTag || "",
+            tasksCompleted: report.tasksCompleted || [],
+            tasksPlannedNextWeek: report.tasksPlannedNextWeek || [],
+            blockers: report.blockers || [],
+            achievements: report.achievements || [],
+            hoursBreakdown: report.hoursBreakdown || {},
+            notes: report.notes || "",
+          },
+          submittedAt: report.lastSubmittedAt || report.createdAt,
+        },
+      ];
+    }
+
+    res.json({ versions });
+  } catch (err) {
+    next(err);
+  }
+};
+
+/**
+ * PUT /api/reports/:id/versions/:versionNumber/restore
+ * Member: can restore own report version (if Draft or Needs Correction)
+ * Manager/Admin: can restore any report version
+ */
+const restoreReportVersion = async (req, res, next) => {
+  try {
+    const { id, versionNumber } = req.params;
+
+    if (!mongoose.isValidObjectId(id)) {
+      res.status(400);
+      return res.json({ message: "Invalid report id" });
+    }
+
+    const report = await Report.findById(id);
+    if (!report) {
+      res.status(404);
+      return res.json({ message: "Report not found" });
+    }
+
+    // RBAC
+    if (req.user.role === "member") {
+      if (String(report.user) !== String(req.user.id)) {
+        res.status(403);
+        return res.json({ message: "Forbidden" });
+      }
+      if (![REPORT_STATUS.DRAFT, REPORT_STATUS.NEEDS_CORRECTION].includes(report.status)) {
+        res.status(400);
+        return res.json({ message: "Cannot restore version on an approved/submitted report" });
+      }
+    }
+
+    const targetVer = await ReportVersion.findOne({
+      report: id,
+      versionNumber: Number(versionNumber),
+    }).lean();
+
+    if (!targetVer || !targetVer.snapshot) {
+      res.status(404);
+      return res.json({ message: `Version #${versionNumber} snapshot not found` });
+    }
+
+    const s = targetVer.snapshot;
+    if (s.tasksCompleted !== undefined) report.tasksCompleted = s.tasksCompleted;
+    if (s.tasksPlannedNextWeek !== undefined) report.tasksPlannedNextWeek = s.tasksPlannedNextWeek;
+    if (s.blockers !== undefined) report.blockers = s.blockers;
+    if (s.achievements !== undefined) report.achievements = s.achievements;
+    if (s.hoursBreakdown !== undefined) report.hoursBreakdown = s.hoursBreakdown;
+    if (s.notes !== undefined) report.notes = s.notes;
+    if (s.categoryTag !== undefined) report.categoryTag = s.categoryTag;
+
+    await report.save();
+
+    res.json({
+      message: `Report successfully restored to Version #${versionNumber}`,
+      report,
+    });
+  } catch (err) {
+    next(err);
+  }
+};
+
 module.exports = {
   createReport,
   getMyReports,
@@ -440,4 +562,6 @@ module.exports = {
   updateReport,
   submitReport,
   reviewReport,
+  getReportVersions,
+  restoreReportVersion,
 };

@@ -9,6 +9,7 @@ import {
 
 import StatusBadge from "../../components/report/StatusBadge.jsx";
 import ManagerCommentBox from "../../components/report/ManagerCommentBox.jsx";
+import VersionSnapshotViewer from "../../components/report/VersionSnapshotViewer.jsx";
 import { 
   FiCheck, 
   FiXCircle, 
@@ -235,9 +236,11 @@ export default function ReviewReportPage() {
 
                   {openVersion === v._id && (
                     <div className="px-4 pb-4 border-t border-slate-200/60 pt-3">
-                      <pre className="overflow-x-auto rounded-xl bg-slate-950 text-slate-100 p-4 text-[11px] font-mono leading-relaxed">
-                        {JSON.stringify(v.snapshot, null, 2)}
-                      </pre>
+                      <VersionSnapshotViewer
+                        snapshot={v.snapshot || {}}
+                        versionNumber={v.versionNumber}
+                        isCurrent={Number(v.versionNumber) === Number(report?.currentVersion)}
+                      />
                     </div>
                   )}
                 </div>
